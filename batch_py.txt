@@ -5,30 +5,33 @@ assoc .py
 ftype Python.File
 
 %%%%%%%%%%%%%%
-cd "C:\Users\lfortini\Google Drive\code\arcpy code\VA arcpy code\"
+cd "C:\Users\lfortini\Google Drive\code\git\arcpyVAtool\"
 arcpy_spp_code_batch_RD72.py
 taskkill /f /im python.exe
 arcpy_spp_code_batch_RD72.py
 taskkill /f /im python.exe
 
 
-cd "C:\Users\lfortini\Google Drive\code\arcpy code\VA arcpy code\"
+cd "C:\Users\lfortini\Google Drive\code\git\arcpyVAtool\"
 arcpy_spp_code_batch_RD72_rev.py
 taskkill /f /im python.exe
 arcpy_spp_code_batch_RD72_rev.py
 taskkill /f /im python.exe
 
 
-cd "C:\Users\lfortini\Google Drive\code\arcpy code\VA arcpy code"
-delete_species_results3.py
-
-cd "C:\Users\lfortini\Google Drive\code\arcpy code\VA arcpy code"
+cd "C:\Users\lfortini\Google Drive\code\git\arcpyVAtool\"
 collect_all_spp_metrics8.py
 
 
-cd "C:\Users\lfortini\Google Drive\code\arcpy code\VA arcpy code"
-%c:\Python27\ArcGISx6410.1\python.exe arcpy_spp_code_batch_RD71.py
-%taskkill /f /im python.exe
+cd "C:\Users\lfortini\Google Drive\code\git\arcpyVAtool\"
+delete_species_results3.py
+
+
+
+
+cd "C:\Users\lfortini\Google Drive\code\git\arcpyVAtool\"
+c:\Python27\ArcGISx6410.1\python.exe arcpy_spp_code_batch_RD71.py
+taskkill /f /im python.exe
 
 
 

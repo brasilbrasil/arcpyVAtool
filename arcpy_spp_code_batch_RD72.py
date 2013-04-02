@@ -5,8 +5,6 @@
 island="all" #la ha all
 landscape_factor_dir=r"Y:/VA data/landscape/" #whichever is data dir, will have to have subfolders: la/DEM/ (where DEM based layers go), gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/VA data/CAO/"
-#landscape_factor_dir=r"C:/Users/lfortini/Data/VA data/landscape/" #whichever is data dir, will have to have subfolders: la/DEM/ (where DEM based layers go), gaplandcover/ (where gaplandcov_hi is placed)
-#CAO_data_dir=r"C:/Users/lfortini/Data/VA data/CAO/"
 highest_slr_impact=3 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
 #f = open("C:/Users/lfortini/Data/0_model_config_sp_to_run.txt", "r")
 #sub_spp_CE_folder= f.read() 

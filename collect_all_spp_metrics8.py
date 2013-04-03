@@ -438,7 +438,7 @@ for sp_code_st in del_terms:
 
 	#Effective zone area
 	try:
-		opath=r"%sDBFs/%s_eff_zone_area.csv" %(resultsdir, sp_code_st)
+		opath=r"%sDBFs/%s_eff_nonpioneer_zone_area.csv" %(resultsdir, sp_code_st)
 		zone_eff_nonpioneer= load_temp_csv_float_data(opath) 
 	except:
 		zone_eff_nonpioneer=['NA']*3

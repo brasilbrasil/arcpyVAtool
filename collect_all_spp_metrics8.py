@@ -551,7 +551,7 @@ for sp_code_st in del_terms:
 		jnk=load_temp_csv_float_data(opath10)	
 		total_CO_points=jnk[0]
 		total_zone_pts=jnk[1]
-		if total_zone_pts>4:
+		if total_zone_pts>3:
 			zone_CO=jnk[2:]
 		else:
 			zone_CO=['NA']*3		

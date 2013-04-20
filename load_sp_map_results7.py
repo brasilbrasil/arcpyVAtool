@@ -116,10 +116,10 @@ def print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_
 	    ref_layers00=[]
 	    names_to_load00=[]
 	    for name in names_to_load1:
-		jnk=names_to_load0.index(name)    
-		To_load00.append(To_load0[jnk])
-		ref_layers00.append(ref_layers0[jnk])
-		names_to_load00.append(name)
+			jnk=names_to_load0.index(name)    
+			To_load00.append(To_load0[jnk])
+			ref_layers00.append(ref_layers0[jnk])
+			names_to_load00.append(name)
 		
 	    To_load=[]
 	    ref_layers=[]

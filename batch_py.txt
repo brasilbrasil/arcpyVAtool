@@ -33,6 +33,19 @@ delete_species_results3.py
 
 y:
 cd "Y:\code\arcpyVAtool\"
+avg_vuln_map_create_CE_overlap_count.py
+avg_vuln_map_create_CE_overlap_count.py
+avg_vuln_map_create_CE_overlap_count.py
+avg_vuln_map2.py
+avg_vuln_map2.py
+avg_vuln_map2.py
+avg_vuln_map2.py
+
+avg_vuln_indicator_map.py
+
+
+y:
+cd "Y:\code\arcpyVAtool\"
 c:\Python27\ArcGISx6410.1\python.exe arcpy_spp_code_batch_RD71.py
 taskkill /f /im python.exe
 

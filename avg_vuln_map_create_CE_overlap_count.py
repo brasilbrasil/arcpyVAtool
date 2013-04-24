@@ -22,6 +22,7 @@ arcpy.env.compression = "LZW"
 if arcpy.CheckExtension("Spatial") == "Available":
 	arcpy.CheckOutExtension("Spatial")
 i=1
+past_sp=0
 rasterList = arcpy.ListRasters("*", "tif")
 f = rasterList[0]
 for f in rasterList:
@@ -40,7 +41,7 @@ for f in rasterList:
 					jnk=arcpy.sa.Con(arcpy.sa.IsNull(jnk),0,jnk)
 					ensemble=jnk
 				else:
-					past_ensemble_loc="%scount_%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i-1,sp_code-1)
+					past_ensemble_loc="%scount_%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i-1,past_sp)
 					past_ensemble=arcpy.Raster(past_ensemble_loc)
 					jnk=arcpy.Raster(os.path.join(rootdir, f))
 					jnk=jnk>0
@@ -49,5 +50,7 @@ for f in rasterList:
 				arcpy.CopyRaster_management(ensemble,out_name,"","","","","","32_BIT_UNSIGNED")
 				#ensemble.save(out_name)
 			i=i+1
+			past_sp=sp_code
+
 
 arcpy.CheckInExtension("Spatial")	

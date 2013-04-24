@@ -24,6 +24,7 @@ if arcpy.CheckExtension("Spatial") == "Available":
 i=1
 rasterList = arcpy.ListRasters("*", "tif")
 f = rasterList[0]
+past_sp=0
 for f in rasterList:
 	if search_term in f:
 		sp_code=int(f[-18:-14]) #f[-8:-4]
@@ -40,7 +41,7 @@ for f in rasterList:
 					jnk=arcpy.sa.Con(arcpy.sa.IsNull(jnk),0,jnk)
 					ensemble=jnk
 				else:
-					past_ensemble_loc="%s%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i-1,sp_code-1)
+					past_ensemble_loc="%s%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i-1,past_sp)
 					past_ensemble=arcpy.Raster(past_ensemble_loc)
 					jnk=arcpy.Raster(os.path.join(rootdir, f))
 					#jnk=jnk==val
@@ -49,5 +50,45 @@ for f in rasterList:
 				arcpy.CopyRaster_management(ensemble,out_name,"","","","","","32_BIT_UNSIGNED")
 				#ensemble.save(out_name)
 			i=i+1
+			past_sp=sp_code
+
+
+###create count of species overlap for weighting
+i=1
+past_sp=0
+rasterList = arcpy.ListRasters("*", "tif")
+f = rasterList[0]
+for f in rasterList:
+	if search_term in f:
+		sp_code=int(f[-18:-14]) #f[-8:-4]
+		if int(sp_code)<1087:
+			print "summing species " + str(sp_code)
+			#print "found " + f
+			out_name="%scount_%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i,sp_code)
+			if arcpy.Exists(out_name):
+				print "raster " + str(i)+" species "+str(sp_code)+" already done"
+			else:
+				if i==1:
+					jnk=arcpy.Raster(os.path.join(rootdir, f))
+					jnk=jnk>0
+					jnk=arcpy.sa.Con(arcpy.sa.IsNull(jnk),0,jnk)
+					ensemble=jnk
+				else:
+					past_ensemble_loc="%scount_%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i-1,past_sp)
+					past_ensemble=arcpy.Raster(past_ensemble_loc)
+					jnk=arcpy.Raster(os.path.join(rootdir, f))
+					jnk=jnk>0
+					jnk=arcpy.sa.Con(arcpy.sa.IsNull(jnk),0,jnk)
+					ensemble=jnk+past_ensemble						
+				arcpy.CopyRaster_management(ensemble,out_name,"","","","","","32_BIT_UNSIGNED")
+				#ensemble.save(out_name)
+			i=i+1
+			past_sp=sp_code
+
 
 arcpy.CheckInExtension("Spatial")	
+count="%scount_%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i,sp_code)
+vuln="%s%i_partial_ensemble_done_sp_%i.tif" %(results_dir,i,sp_code)
+wgt_vuln=arcpy.Raster(vuln)/arcpy.Raster(count)
+loc_wgt_vuln="%sweigted_vuln.tif" %(results_dir)
+wgt_vuln.save(loc_wgt_vuln)

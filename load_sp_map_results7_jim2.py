@@ -6,9 +6,9 @@
 resultsdir=r"Y:/PICCC_analysis/tempmap/" #where climate envelopes are located  
 CAO_data_dir=r"Y:/PICCC_analysis/tempmap/CAO/" #point data, spp_name_synonyms.csv
 ref_lyr_dir=r"Y:/PICCC_analysis/tempmap/reflyrs/"
-print_map_output=1
+print_map_output=0
 #sp_codes=["0710", "1081", "0384", "0499", "0260", "1031", "0328"]
-sp_codes=["0003"] #"0664", "0502", "0134", "0671"
+sp_codes=["0003"]#, "0664", "0502", "0134"] #"0664", "0502", "0134", "0671"
 overwrite_res=1
 
 sp_temps=range(253,1087)
@@ -64,7 +64,7 @@ def del_layer(layer_name):
 
 
 def print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res):
-sp_code_st="0001"	
+sp_code_st="0003"	
 output_text_ID="test"
 names_to_load1=["current_envelope", "all_points"]
 #XXXXXXXXXXXXXXXXXXX
@@ -117,8 +117,6 @@ else:
 				fc_rl_temp=names_to_load[i] #fc[:-4]+"temp"
 				sourceLayer0=ref_lyr_dir+ref_layers[i]
 				arcpy.MakeRasterLayer_management(fc_pluspath, fc_rl_temp, "#", "", "#")
-				#extent = fc_lyr.getExtent()
-				#df.extent = extent
 		
 			if fc[-4:]==".shp":
 				fc_lyr=fc[:-4] +"_temp.lyr" 
@@ -127,11 +125,17 @@ else:
 				sourceLayer0=ref_lyr_dir+ref_layers[i]
 				expr=""" "sp_name" = '%s' """ %(sp_name)
 				arcpy.MakeFeatureLayer_management (fc_pluspath, fc_rl_temp, expr, "", "#")
+				
+				extent = fc_pluspath.getExtent()
+				df.extent = extent
 
 			arcpy.ApplySymbologyFromLayer_management(fc_rl_temp, sourceLayer0)
 				
-			
-			
+		
+		#dataframe = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]	
+		#df.zoomToSelectedFeatures()
+		#fc_pluspath.zoomToSelectedFeatures()
+		
 		arcpy.RefreshActiveView() 
 		arcpy.RefreshTOC()
 	
@@ -140,37 +144,36 @@ else:
 	if len(To_load)>0:
 		if print_map_output==1:
 			arcpy.mapping.ExportToTIFF(mxd, output_path)
-		
-		for df in arcpy.mapping.ListDataFrames(mxd):       
-			mxd.activeView = df.name
-			for i in range(len(To_load)):
-				fc_rl_temp=names_to_load[i] #fc[:-4]+"temp"
-				try:
-					del_layer(fc_rl_temp)
-				except:
-					pass
-				try:                
-					arcpy.Delete_management(fc_rl_temp)
-				except:
-					pass
-				jnks=arcpy.mapping.ListBrokenDataSources(df)
-				for jnk in jnks:
-					arcpy.mapping.RemoveLayer(df, jnk)
-			
-		arcpy.RefreshActiveView() 
-		arcpy.RefreshTOC()
+			for df in arcpy.mapping.ListDataFrames(mxd):       
+				mxd.activeView = df.name
+				for i in range(len(To_load)):
+					fc_rl_temp=names_to_load[i] #fc[:-4]+"temp"
+					try:
+						del_layer(fc_rl_temp)
+					except:
+						pass
+					try:                
+						arcpy.Delete_management(fc_rl_temp)
+					except:
+						pass
+					jnks=arcpy.mapping.ListBrokenDataSources(df)
+					for jnk in jnks:
+						arcpy.mapping.RemoveLayer(df, jnk)
+				
+			arcpy.RefreshActiveView() 
+			arcpy.RefreshTOC()
 			#remove these map layers!!
 
-    return
+	return
 #sp_code_st = sp_codes[0]
 for sp_code_st in sp_codes:
-    t0 = time.time()
-    t00=t0
-    
-    names_to_load1=["current_envelope", "Current occurence records"] #, "Points beyond response zone" 
-    output_text_ID = "points_and_current_CE"
-    print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
-    
+	t0 = time.time()
+	t00=t0
+	
+	names_to_load1=["current_envelope", "all_points"] #, "Points beyond response zone" 
+	output_text_ID = "points_and_current_CE"
+	print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
+	
 	t1 = time.time()
-    print 'It took %i seconds to rrun code for species %s' %(int(t1-t00), sp_code_st)
+	print 'It took %i seconds to rrun code for species %s' %(int(t1-t00), sp_code_st)
  

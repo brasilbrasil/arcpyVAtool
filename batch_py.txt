@@ -33,6 +33,8 @@ delete_species_results3.py
 
 y:
 cd "Y:\code\arcpyVAtool\"
+vuln_quant_heat_maps.py
+
 avg_vuln_map_create_CE_overlap_count.py
 avg_vuln_map_create_CE_overlap_count.py
 avg_vuln_map_create_CE_overlap_count.py

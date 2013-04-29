@@ -7,6 +7,9 @@ ftype Python.File
 %%%%%%%%%%%%%%
 y:
 cd "Y:\code\arcpyVAtool\"
+vuln_winkout_heat_maps.py
+vuln_winkout_heat_maps.py
+vuln_winkout_heat_maps.py
 arcpy_spp_code_batch_RD72.py
 taskkill /f /im python.exe
 arcpy_spp_code_batch_RD72.py

@@ -4,7 +4,7 @@ search_term="CCE"
 rootdir=r"Y:/VA data/CEs500m/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files) 
 
 #END USER INPUT
-results_dir="Y:/Py_code/results/ensemble_zone_maps/avg_map/vuln_quantile_heat_maps/"
+results_dir="Y:/Py_code/results/ensemble_zone_maps/avg_map/vuln_quantile_heat_maps_new/"
 CAO_data_dir=r"Y:/VA data/CAO/"
 import os
 import arcpy
@@ -15,7 +15,7 @@ arcpy.env.overwriteOutput = True
 arcpy.env.workspace = rootdir
 arcpy.env.compression = "LZW"
 
-csvname="%svulnerability_ensemble_maps_aux_data.csv" %(CAO_data_dir)
+csvname="%sunknwnfacs_eqwgts_priors_thirddispersion_vulnerability_ensemble_maps_aux_data.csv" %(CAO_data_dir)
 f = open(csvname, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is
 reader = csv.reader(f)
 headers = reader.next()
@@ -33,16 +33,19 @@ if arcpy.CheckExtension("Spatial") == "Available":
 
 rasterList = arcpy.ListRasters("*", "tif")
 quants=[10, 20, 30, 40, 50]
-
+quant=quants[0]
 for quant in quants:
 	i=1
 	past_sp=0
+	f=rasterList[0]
 	for f in rasterList:
 		if search_term in f:
 			sp_code=int(f[-13:-9])
 			if int(sp_code)<=1085:
 				Sp_index=hab_sp_code.index(str(sp_code))
 				sp_subgroup=indicator_val[Sp_index]
+				print Sp_index
+				print sp_subgroup
 				print "indicator score for species " + str(sp_code) + " is " + sp_subgroup
 				sp_subgroup=int(sp_subgroup)
 				if sp_subgroup<=quant:

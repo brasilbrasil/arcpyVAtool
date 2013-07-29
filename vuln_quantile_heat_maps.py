@@ -2,6 +2,7 @@
 #USER INPUT
 search_term="CCE"
 rootdir=r"Y:/VA data/CEs500m/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files) 
+by_veg_type=True
 
 #END USER INPUT
 results_dir="Y:/Py_code/results/ensemble_zone_maps/avg_map/vuln_quantile_heat_maps_new/"
@@ -15,6 +16,7 @@ arcpy.env.overwriteOutput = True
 arcpy.env.workspace = rootdir
 arcpy.env.compression = "LZW"
 
+###update file!!!
 csvname="%sunknwnfacs_eqwgts_priors_thirddispersion_vulnerability_ensemble_maps_aux_data.csv" %(CAO_data_dir)
 f = open(csvname, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is
 reader = csv.reader(f)
@@ -27,6 +29,8 @@ for row in reader:
 		column[h].append(v)
 hab_sp_code=column['sp_code']
 indicator_val=column['rd_quantile'] #TEs
+dominant_val=column['dominant_cover'] #TEs
+cover1_val=column['cover1'] #TEs
 
 if arcpy.CheckExtension("Spatial") == "Available":
 	arcpy.CheckOutExtension("Spatial")
@@ -34,6 +38,7 @@ if arcpy.CheckExtension("Spatial") == "Available":
 rasterList = arcpy.ListRasters("*", "tif")
 quants=[10, 20, 30, 40, 50]
 quant=quants[0]
+
 for quant in quants:
 	i=1
 	past_sp=0

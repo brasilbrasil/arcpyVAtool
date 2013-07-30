@@ -5,14 +5,13 @@
 #USER INPUT
 rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files) 
 island="all" #la ha all
-landscape_factor_dir=r"Y:/VA data/landscape/" #whichever is data dir, will have to have subfolders: la/DEM/ (where DEM based layers go), gaplandcover/ (where gaplandcov_hi is placed)
-CAO_data_dir=r"Y:/VA data/CAO/"
-print_map_output=0
-sp_codes=["1031"]#, "0664", "0134", "0357", "0909", "0034", "0789", "0439", "0402", "0032", "0039", "0433", "0825", "0263", "0426", "0499", "0157", "0438", "0028", "1031", "0358", "094", "1084", "0187", "0671", "0991", "0988", "0884", "0909", "0664"]
-#sp_codes=["0671", "0664"] #"0664", "0502", "0134", "0671"
-overwrite_res=1
+landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir, will have to have subfolders: la/DEM/ (where DEM based layers go), gaplandcover/ (where gaplandcov_hi is placed)
+CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/"
+print_map_output=1
+sp_codes=["0005"]#, "0664", "0134", "0357", "0909", "0034", "0789", "0439", "0402", "0032", "0039", "0433", "0825", "0263", "0426", "0499", "0157", "0438", "0028", "1031", "0358", "094", "1084", "0187", "0671", "0991", "0988", "0884", "0909", "0664"]
+overwrite_res=0
 
-sp_temps=range(1020,1087)
+sp_temps=range(1,1087)#1087
 del_terms=[]
 bioreg_subset=0
 for sp_temp in sp_temps:
@@ -22,7 +21,7 @@ for sp_temp in sp_temps:
 	if bioreg_subset==1:
 		new_sp_code=new_sp_code+"_trim"
 	del_terms.append(new_sp_code)
-#sp_codes=del_terms
+sp_codes=del_terms
 #sp_codes=reversed(sp_codes)
 
 #START UNDERHOOD
@@ -72,7 +71,7 @@ def print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_
         sp_name="Unkown"
     if nf==0:
         sp_name=New_sp_names[Sp_index]
-	output_path = resultsdir+ "output_maps/"+ sp_code_st +"_"+ sp_name + "_" + output_text_ID + ".tif"
+	output_path = resultsdir+ "output_maps_report/"+ sp_code_st +"_"+ sp_name + "_" + output_text_ID + ".tif"
 	if overwrite_res==0 and arcpy.Exists(output_path):
 		print sp_code + " calculated already"
 	else:
@@ -186,32 +185,31 @@ for sp_code_st in sp_codes:
     t00=t0
 	
     #names_to_load1=["Response zones", "Current occurence records"] #, "Points beyond response zone" 
-    #output_text_ID = "VA_C1_map1_zones_and_pts_map2"
+    #output_text_ID = "VA_map1_zones_and_pts_map2"
     #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
     
-    names_to_load1=["Response zones", "Habitat quality"]
-    output_text_ID= "VA_C1_map2_hab_qual"
-    print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
+    #names_to_load1=["Response zones", "Habitat quality"]
+    #output_text_ID= "VA_map2_hab_qual"
+    #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
     
-    #names_to_load2=["Response zones", "Lava flows", "Sea level rise impacted areas"]
-    ##names_to_load2=["Response zones", "Sea level rise impacted areas", "Protected areas", "Ungulate free areas", "Lava flows"]
-    #output_text_ID2 = "VA_C1_map3_hab_qual2"
-    #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
-    #
+    names_to_load2=["Response zones", "Lava flows", "Sea level rise impacted areas"]
+    output_text_ID2 = "VA_map3_hab_qual2"
+    print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
+
     #names_to_load1=["Response zones", "Edge area", "Core biome area"] 
-    #output_text_ID = "VA_C1_map4_zones_and_frag"
+    #output_text_ID = "VA_map4_zones_and_frag"
     #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
-    #
+
     ###names_to_load1=["Response zones", "Current occurence records", "Points beyond response zone", "Fishnet" ] 
     ###output_text_ID = "VA_C1_map1_zones_and_pts_map2_with_net"
     ###print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
-    ##
+
     #names_to_load2=["Response zones", "Protected areas", "Ungulate free areas"]
     #output_text_ID2 = "VA_C1_map5_prot_and_ungfree_areas"
     #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
-    #
+
     #names_to_load2=["Response zones", "Protected areas"]
-    #output_text_ID2 = "VA_C1_map6_prot_areas"
+    #output_text_ID2 = "VA_map6_prot_areas"
     #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
     
     t1 = time.time()

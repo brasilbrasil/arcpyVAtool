@@ -11,7 +11,7 @@ print_map_output=1
 sp_codes=["0005"]#, "0664", "0134", "0357", "0909", "0034", "0789", "0439", "0402", "0032", "0039", "0433", "0825", "0263", "0426", "0499", "0157", "0438", "0028", "1031", "0358", "094", "1084", "0187", "0671", "0991", "0988", "0884", "0909", "0664"]
 overwrite_res=0
 
-sp_temps=range(1,1087)#1087
+sp_temps=range(253,1087)#1087
 del_terms=[]
 bioreg_subset=0
 for sp_temp in sp_temps:
@@ -21,7 +21,7 @@ for sp_temp in sp_temps:
 	if bioreg_subset==1:
 		new_sp_code=new_sp_code+"_trim"
 	del_terms.append(new_sp_code)
-sp_codes=del_terms
+#sp_codes=del_terms
 #sp_codes=reversed(sp_codes)
 
 #START UNDERHOOD
@@ -184,21 +184,21 @@ for sp_code_st in sp_codes:
     t0 = time.time()
     t00=t0
 	
-    #names_to_load1=["Response zones", "Current occurence records"] #, "Points beyond response zone" 
-    #output_text_ID = "VA_map1_zones_and_pts_map2"
-    #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
+    names_to_load1=["Response zones", "Current occurence records"] #, "Points beyond response zone" 
+    output_text_ID = "VA_map1_zones_and_pts_map2"
+    print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
     
-    #names_to_load1=["Response zones", "Habitat quality"]
-    #output_text_ID= "VA_map2_hab_qual"
-    #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
+    names_to_load1=["Response zones", "Habitat quality"]
+    output_text_ID= "VA_map2_hab_qual"
+    print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
     
-    names_to_load2=["Response zones", "Lava flows", "Sea level rise impacted areas"]
-    output_text_ID2 = "VA_map3_hab_qual2"
-    print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
+    #names_to_load2=["Response zones", "Lava flows", "Sea level rise impacted areas"]
+    #output_text_ID2 = "VA_map3_hab_qual2"
+    #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
 
-    #names_to_load1=["Response zones", "Edge area", "Core biome area"] 
-    #output_text_ID = "VA_map4_zones_and_frag"
-    #print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
+    names_to_load1=["Response zones", "Edge area", "Core biome area"] 
+    output_text_ID = "VA_map4_zones_and_frag"
+    print_map(names_to_load1, output_text_ID, sp_code_st, resultsdir, overwrite_res)
 
     ###names_to_load1=["Response zones", "Current occurence records", "Points beyond response zone", "Fishnet" ] 
     ###output_text_ID = "VA_C1_map1_zones_and_pts_map2_with_net"
@@ -208,9 +208,9 @@ for sp_code_st in sp_codes:
     #output_text_ID2 = "VA_C1_map5_prot_and_ungfree_areas"
     #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
 
-    #names_to_load2=["Response zones", "Protected areas"]
-    #output_text_ID2 = "VA_map6_prot_areas"
-    #print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
+    names_to_load2=["Response zones", "Protected areas"]
+    output_text_ID2 = "VA_map6_prot_areas"
+    print_map(names_to_load2, output_text_ID2, sp_code_st, resultsdir, overwrite_res)
     
     t1 = time.time()
     print 'It took %i seconds to rrun code for species %s' %(int(t1-t00), sp_code_st)

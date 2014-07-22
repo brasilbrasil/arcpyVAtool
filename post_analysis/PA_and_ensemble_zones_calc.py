@@ -8,10 +8,12 @@ shapefile_col="AreaNumber"
 #raster_files=["z1_1059_partial_ensemble.tif", "z2_1059_partial_ensemble.tif",
 #"z3_1059_partial_ensemble.tif", "CCE_ensemble.tif", "FCE_ensemble.tif", "quantwinkout_54_map_sp1081.tif",
 raster_files=["330_NC_Nex_HiVuln_zone2_partial_ensemble.tif", "NC_Nex_HiVuln_330_sp1081.tif",
-"NC_Nex_NO_101_sp1081.tif", "NC_Nex_winkout_35_sp1081.tif"]
+"NC_Nex_NO_101_sp1081.tif", "NC_Nex_winkout_35_sp1081.tif", "Modelled_richness_delta_truncated.tif",
+"Modelled_richness_relative_delta_truncated.tif", "956_NC_Nex_wFCE_zone2_partial_ensemble.tif"]
 #raster_names=["Micro_refugia", "Tolerate", "Migrate", "Current", "Future", "Winkout", "No_overlap"]
-raster_names=["NC_Nex_HiVuln_zone2", "NC_Nex_HiVuln_CCE", "NC_Nex_NO_CCE", "NC_Nex_winkout_CCE"]
-fieldNames=["HiVulnZ2", "HiVuln_CCE", "NO_CCE", "WO_CCE"]
+raster_names=["NC_Nex_HiVuln_zone2", "NC_Nex_HiVuln_CCE", "NC_Nex_NO_CCE", "NC_Nex_winkout_CCE",
+"Richness_delta", "Rel_richness_delta", "NC_Nex_zone2"]
+fieldNames=["HiVulnZ2", "HiVuln_CCE", "NO_CCE", "WO_CCE", "R_delta", "Rel_R_dt", "NcNex_Tol"]
 area_type="Fencing_areas"
 results_dir="Y:/PICCC_analysis/DLNR_plantVA/results/mean_responses/"
 

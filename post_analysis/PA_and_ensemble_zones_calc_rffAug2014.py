@@ -1,22 +1,18 @@
 ##this code is not finished trying to do it by shapefile means
 #USER INPUT
 #search_term="CCE"
-rootdir=r"Y:/VA data/CEs/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/VA data/CEs/"
 ensemble_zone_raster_dir="Y:/PICCC_analysis/plant_landscape_va_results/ensemble_zone_maps/NC_Nex_vuln_quantile_maps/"
-shapefile_file0="Y:/PICCC_analysis/DLNR_plantVA/FWS_kauai_analysis/shapefiles/Kauai_MgmtUnits_20140505_final.shp"
-shapefile_col="FID" #"AreaNumber"
-#raster_files=["z1_1059_partial_ensemble.tif", "z2_1059_partial_ensemble.tif",
-#"z3_1059_partial_ensemble.tif", "CCE_ensemble.tif", "FCE_ensemble.tif", "quantwinkout_54_map_sp1081.tif",
+shapefile_file0="Y:/PICCC_analysis/DLNR_plantVA/RFF request Aug 2014/shapefiles/CIP FY 16 & 17 Request.shp"
+shapefile_col="AreaNumber"
 raster_files=["NC_Nex_HiVul_CCE_297_sp1081.tif", "NC_Nex_HiVul_FCE_297_sp1081.tif",
-"297_NC_Nex_HiVul_zone2_partial_ensemble.tif", "NC_Nex_NO_101_sp1081.tif",
-"NC_Nex_winkout_35_sp1081.tif", "Modelled_richness_delta_truncated.tif",
-"Modelled_richness_relative_delta_truncated.tif", "956_NC_Nex_wFCE_zone2_partial_ensemble.tif"]
-#raster_names=["Micro_refugia", "Tolerate", "Migrate", "Current", "Future", "Winkout", "No_overlap"]
-raster_names=["NC_Nex_HiVul_CCE", "NC_Nex_HiVul_FCE", "NC_Nex_HiVul_zone2", "NC_Nex_NO_CCE", "NC_Nex_winkout_CCE",
-"Richness_delta", "Rel_richness_delta", "NC_Nex_zone2"]
-fieldNames=["HiVul_CCE", "HiVul_FCE", "HiVul_Z2", "NO_CCE", "WO_CCE", "R_delta", "Rel_R_dt", "NcNex_Tol"]
-area_type="Kauai_FWS_MUs"
-results_dir="Y:/PICCC_analysis/DLNR_plantVA/FWS_kauai_analysis/results/"
+"297_NC_Nex_HiVul_zone2_partial_ensemble.tif", "NC_Nex_wFCE_955_sp1085.tif",
+"956_NC_Nex_wFCE_zone2_partial_ensemble.tif"]
+raster_names=["NC_Nex_HiVul_CCE", "NC_Nex_HiVul_FCE", "NC_Nex_HiVul_zone2", "NC_Nex_FCE",
+"NC_Nex_FCE_zone2"]
+fieldNames=["HiVul_CCE", "HiVul_FCE", "HiVul_Z2", "FCE", "FCE_Z2"]
+area_type="Fencing_areas_FY16_17"
+results_dir="Y:/PICCC_analysis/DLNR_plantVA/RFF request Aug 2014/results/"
 
 #END USER INPUT
 import os
@@ -28,40 +24,11 @@ arcpy.env.overwriteOutput = True
 arcpy.env.workspace = rootdir
 arcpy.env.compression = "LZW"
 
-def FieldExist(featureclass, fieldname):
-    fieldList = arcpy.ListFields(featureclass, fieldname)
-    fieldCount = len(fieldList)
-    if (fieldCount == 1):
-        return True
-    else:
-        return False
-
 if arcpy.CheckExtension("Spatial") == "Available":
 	arcpy.CheckOutExtension("Spatial")
 
 shapefile_file=shapefile_file0[:-4]+"_withVAdata.shp"
 arcpy.Copy_management(shapefile_file0, shapefile_file)
-
-#create row with exclusive numbers
-#fields=arcpy.ListFields(shapefile_file)
-if not FieldExist(shapefile_file, "AreaNums"):
-    arcpy.AddField_management(shapefile_file, "AreaNums", "SHORT", "", "", "", "", "")
-
-rows = arcpy.UpdateCursor(shapefile_file)
-counter = 1
-for row in rows:
-    #print row.Subunit
-    row.AreaNums = counter
-    rows.updateRow(row)
-    counter += 1
-    print row.AreaNums
-#remove lock from file
-if row:
-    del row
-if rows:
-    del rows
-import gc
-gc.collect()
 
 for i in range(len(raster_files)):
     in_value_raster=ensemble_zone_raster_dir+raster_files[i]

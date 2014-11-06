@@ -4,11 +4,11 @@ search_term="CCE" #FCE or CCE
 rootdir=r"Y:/PICCC_data/VA data/CEs/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 results_dir="Y:/PICCC_analysis/plant_landscape_va_results/ensemble_zone_maps/NC_Nex_vuln_quantile_maps/"
 spp_info_dir="Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/"
-csvname="%stmp_ensemble_criteria4_highVuln.csv" %(spp_info_dir)
-column_name='NC_Nex' #NC_winkout	NC_NO	NC_NEx_winkout	NC_Nex_NO OA_NC_Nex_End OA_NC_Nex_notSec
+csvname="%stmp_ensemble_criteria6_highVuln.csv" %(spp_info_dir)
+column_name='NC_Nex_HiVul' #NC_winkout	NC_NO	NC_NEx_winkout	NC_Nex_NO OA_NC_Nex_End OA_NC_Nex_notSec
 #the two parameters below are unlikely to change
 indicator_val=1 #what is the value in column that indicates species should be included? must be number
-out_str=column_name #name of raster
+out_str=column_name+"_"+search_term #name of raster
 #END USER INPUT
 
 

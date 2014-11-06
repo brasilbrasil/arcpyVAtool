@@ -3,8 +3,8 @@ search_term="response_zone"
 rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/all" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 zone_val=2 #1,2,3
 spp_info_dir=r"Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/" #where is spreadsheet
-csvname="%stmp_ensemble_criteria5_highVuln.csv" %(spp_info_dir)
-column_name='NC_Nex_wFCE' #'OA_NC_Nex_End', 'OA_NC_Nex_notSec'
+csvname="%stmp_ensemble_criteria6_highVuln.csv" %(spp_info_dir)
+column_name='NC_Nex_HiVul' #'OA_NC_Nex_End', 'OA_NC_Nex_notSec'
 indicator_val="1" #what is the value in column that indicates species should be included? must be number
 out_str=column_name #name of raster
 

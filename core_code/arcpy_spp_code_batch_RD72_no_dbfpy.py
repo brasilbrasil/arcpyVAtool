@@ -3,7 +3,7 @@
 #if running parallel, must run this from cmd with script above, python must be on system path
 
 #USER INPUT
-island="all" #la ha all
+island="all" #la ha all #must enable analysis for individual islands
 landscape_factor_dir=r"D:/PICCC_data/VA data/landscape/" #whichever is data dir, will have to have subfolders: la/DEM/ (where DEM based layers go), gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"D:/PICCC_data/VA data/CAO/"
 highest_slr_impact=3 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
@@ -20,46 +20,46 @@ keep_intermediary_output=0 #enter 1 for debug reasons, will a lot of intermediar
 #send_email_error_message=0
 overwrite=0
 sp_envelope_gap=0 #this will avoid the computationally intensive mapping of the transition zone if value is 0
-parallel=True #for multiprocessing across species #ONLY DO IT FOR ONE STEP AT A TIME!!!
+parallel=True #for multiprocessing across species
 
 #what pieces to run?
 pre_process_envelopes=True
-calculate_veg_type_areas=False
-calc_cce_total_area=False
-calc_fce_total_area=False
-calc_cce_fce_dif=False
-map_tol_zone=False
-map_mrf_zone=False
-map_mig_zone_pt1=False
-calc_dist_fce_to_CCE=False
-calc_mean_elev_cce=False
-calc_mean_elev_fce=False
+calculate_veg_type_areas=True
+calc_cce_total_area=True
+calc_fce_total_area=True
+calc_cce_fce_dif=True
+map_tol_zone=True
+map_mrf_zone=True
+map_mig_zone_pt1=True
+calc_dist_fce_to_CCE=True
+calc_mean_elev_cce=True
+calc_mean_elev_fce=True
 ##
-create_rep_zones=False
-calc_resp_zone_area=False
-calc_zone_slr_area=False
-calc_zone_lava_flow_area=False
-calc_zone_hab_qual=False
-calc_eff_hab_qual_nonpioneer=False
-calc_eff_hab_qual_pioneer=False
-chose_eff_hab_qual=False
-#create_eff_resp_zones=False
-#calc_eff_resp_zone_area=False #debug: why dying after species 549?
-calc_hab_qual=False
-calc_fragmentation=False
-calc_dist_to_top_of_island=False
-calc_protected_area=False
-calc_ung_free_area=False
-calc_slope_metrics=False
-calc_zone_aspect_mean=False
-calc_zone_cos_aspect=False
-calc_zone_sin_aspect=False
-calc_zone_aspect_std=False
-calc_ppt_gradient=False
-calc_zone_invasibility=False
+create_rep_zones=True
+calc_resp_zone_area=True
+calc_zone_slr_area=True
+calc_zone_lava_flow_area=True
+calc_zone_hab_qual=True #this is breaking randomly
+calc_eff_hab_qual_nonpioneer=True
+calc_eff_hab_qual_pioneer=True
+chose_eff_hab_qual=True
+#create_eff_resp_zones=True
+#calc_eff_resp_zone_area=True #debug: why dying after species 549?
+calc_hab_qual=True
+calc_fragmentation=True
+calc_dist_to_top_of_island=True
+calc_protected_area=True
+calc_ung_free_area=True
+calc_slope_metrics=True
+calc_zone_aspect_mean=True
+calc_zone_cos_aspect=True
+calc_zone_sin_aspect=True
+calc_zone_aspect_std=True
+calc_ppt_gradient=True
+calc_zone_invasibility=True
 
 #START UNDERHOOD
-rootdir=r"D:/PICCC_analysis/plant_landscape_va_results/testRuns2/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"D:/PICCC_analysis/plant_landscape_va_results/testRuns3/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 resultsdir0=r"%sresults/%s/" %(rootdir, island)
 datadir=ce_data_dir
 
@@ -218,6 +218,8 @@ def zonal_area_from_dbf_byCol(outname, temp_zones,col_name,multFactor=(1.0/10000
     return outputVec
 
 def va_metric_wrapper(VA_func, i):
+    if arcpy.CheckExtension("Spatial") == "Available": #must check out license within worker process, as license does not seem to be inherited by parallel workers
+        arcpy.CheckOutExtension("Spatial")
     t0 = time.time()
     print('worker', os.getpid(), ' running and doing ', i)
     jnk=randrange(100000)
@@ -236,6 +238,7 @@ def va_metric_wrapper(VA_func, i):
     sp_code=str(int(sp_code_st)) #get rid of extra zeros
 
     jnk=VA_func(sp_code_st, resultsdir, sp_code)
+    arcpy.CheckInExtension("Spatial") # Check in the 3D Analyst extension so other users can access it
 
     if jnk[1]:
         print VA_func.__name__ + 'not applicable for species %s' %(sp_code_st);
@@ -376,7 +379,7 @@ try:
     ###CREATE FUTURE AND BASELINE CLIMATE ENVELOPES
     if pre_process_envelopes:
         i=0 #for debug
-        def pre_process_env_fx2(sp_code_st, resultsdir, sp_code):
+        def pre_process_env_fx2(sp_code_st, resultsdir, sp_code): #also uses use_bio_region_filter, CO_lyr, island, landscape_factor_dir
             metric_NA=True
             arcpy.MakeFeatureLayer_management(Bioregions_loc, "bioregions_lyr")
             arcpy.SelectLayerByAttribute_management ("bioregions_lyr", "CLEAR_SELECTION", )
@@ -472,9 +475,6 @@ try:
                     sp_CO_points_loc=resultsdir+sp_code_st+"_sp_CO_points.shp"
                     arcpy.CopyFeatures_management("CO_lyr", sp_CO_points_loc)
                     if int(arcpy.GetCount_management(sp_CO_points_loc).getOutput(0))>0 and use_bio_region_filter==1:
-                        #arcpy.CopyFeatures_management("CO_lyr", "sp_CO_points")
-                        #must first pick bioregions by CO points
-                        #arcpy.SelectLayerByLocation_management('bioregions', 'contains', 'sp_CO_points')
                         arcpy.SelectLayerByLocation_management("bioregions_lyr", 'contains', sp_CO_points_loc)
 
                         #Cut FCE and CCE by bioregion
@@ -508,12 +508,15 @@ try:
                 pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
                 pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(pre_process_env_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
                 pool.close()
+                import time
+                time.sleep(10) #give it some time before trying to terminate pool to avoid ' access is denied'  error
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
 
     #calculate veg type areas
     if calculate_veg_type_areas:
-        def calculate_veg_type_areas_fx2(sp_code_st, resultsdir, sp_code):
+        def calculate_veg_type_areas_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
@@ -548,13 +551,16 @@ try:
                 pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
                 pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_veg_type_areas_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
                 pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
 
     if calc_cce_total_area:
-        def calc_cce_total_area_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_cce_total_area_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
-            Sp_index=all_sp_codes.index(sp_code)
+            #Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
             if arcpy.Exists(loc_COR_CCE):
                 opath="%sDBFs/calc_area_CCE%s.csv" %(resultsdir,sp_code_st)
@@ -563,10 +569,6 @@ try:
                     inRaster = CCE_temp
                     outname=r"%sDBFs/calc_area_CCE%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",CCE_temp,"VALUE",outname)
-                    #db = dbf.Dbf(outname)
-                    #rec=db[0]
-                    #area_CCE=rec["VALUE_1"]/1000000
-                    #jnk=[area_CCE]
 
                     temp_zones=range(1,2)
                     jnk=zonal_area_from_dbf2(outname, temp_zones)
@@ -580,21 +582,36 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_cce_total_area_fx2, i)
+
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_cce_total_area_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_cce_total_area_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CALC FCE TOTAL AREA
     if calc_fce_total_area:
-        def calc_fce_total_area_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_fce_total_area_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
-            t0 = time.time()
-            jnk=CCE_Spp[i]
-            jnk.encode('ascii','replace')
-            inRaster = ce_data_dir + jnk
-            sp_code_st=inRaster[-8:-4]
-            resultsdir=resultsdir0+sp_code_st+"/"
-            sp_code=str(int(sp_code_st)) #get rid of extra zeros
-            Sp_index=all_sp_codes.index(sp_code)
+            #t0 = time.time()
+            #jnk=CCE_Spp[i]
+            #jnk.encode('ascii','replace')
+            #inRaster = ce_data_dir + jnk
+            #sp_code_st=inRaster[-8:-4]
+            #resultsdir=resultsdir0+sp_code_st+"/"
+            #sp_code=str(int(sp_code_st)) #get rid of extra zeros
+            #Sp_index=all_sp_codes.index(sp_code)
             loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
             if arcpy.Exists(loc_COR_FCE):
                 opath="%sDBFs/calc_area_FCE%s.csv" %(resultsdir,sp_code_st)
@@ -612,9 +629,6 @@ try:
                         inRaster = FCE_temp
                         outname=r"%sDBFs/calc_area_FCE%s.dbf" %(resultsdir,sp_code_st)
                         arcpy.sa.TabulateArea(FCE_temp,"VALUE",FCE_temp,"VALUE",outname)
-                        #db = dbf.Dbf(outname)
-                        #rec=db[0]
-                        #area_FCE=rec["VALUE_1"]/1000000
                         temp_zones=range(1,2)
                         jnk=zonal_area_from_dbf2(outname, temp_zones)
                     else:
@@ -629,12 +643,26 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_fce_total_area_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_fce_total_area_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_fce_total_area_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##CALC CCE-FCE
     if calc_cce_fce_dif:
-        def calc_cce_fce_dif_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_cce_fce_dif_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
@@ -661,12 +689,26 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_cce_fce_dif_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_cce_fce_dif_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_cce_fce_dif_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##MAP- TOLERATE ZONE- COMMON AREA BETWEEN CCE AND FCE
     if map_tol_zone:
-        def map_tol_zone_fx2(sp_code_st, resultsdir, sp_code):
+        def map_tol_zone_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
@@ -693,13 +735,27 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(map_tol_zone_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(map_tol_zone_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(map_tol_zone_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
 
     ##CALCULATE MICRO-REFUGIA ZONE AREA
     if map_mrf_zone:
-        def map_mrf_zone_fx2(sp_code_st, resultsdir, sp_code):
+        def map_mrf_zone_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
@@ -728,12 +784,26 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(map_mrf_zone_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(map_mrf_zone_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(map_mrf_zone_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##MAP MIGRATE ZONE PART 1
     if map_mig_zone_pt1:
-        def map_mig_zone_pt1_fx2(sp_code_st, resultsdir, sp_code):
+        def map_mig_zone_pt1_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
@@ -764,13 +834,27 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(map_mig_zone_pt1_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(map_mig_zone_pt1_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(map_mig_zone_pt1_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##CALCULATE DISTANCE OF FCE FROM SOURCE CCE AREAS
     ##CALCULATE EUCLIDIAN DISTANCE OF ALL CELLS TO NEAREST CCE/CAO
     if calc_dist_fce_to_CCE:
-        def calc_dist_fce_to_CCE_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_dist_fce_to_CCE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
@@ -784,9 +868,8 @@ try:
                     if area_FCE!=0:
                         CCE_temp=arcpy.Raster(loc_COR_CCE)
                         FCE_temp=arcpy.Raster(loc_COR_FCE)
-                        inRaster = FCE_temp #CCE_Spp[i]
-                        inRaster_name = FCE_Spp[i]
-                        FCE_dist_temp = arcpy.sa.EucDistance(inRaster)
+                        #inRaster = FCE_temp #CCE_Spp[i]
+                        FCE_dist_temp = arcpy.sa.EucDistance(FCE_temp)
                         #CLIP DISTANCE SURFACE USING FCE
                         FCE_dist_temp=FCE_dist_temp*CCE_temp
                         FCE_distance=get_num_attributes(FCE_dist_temp,"MEAN")
@@ -806,12 +889,26 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_dist_fce_to_CCE_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_dist_fce_to_CCE_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_dist_fce_to_CCE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##CALCULATE MEAN ELEVATION OF CCE
     if calc_mean_elev_cce:
-        def calc_mean_elev_cce_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_mean_elev_cce_fx2(sp_code_st, resultsdir, sp_code): #landscape_factor_dir,island
             metric_NA=True
             inRasterloc2 = r"%s%s/DEM/%s_dem.tif" %(landscape_factor_dir,island,island)
             Sp_index=all_sp_codes.index(sp_code)
@@ -845,12 +942,26 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_mean_elev_cce_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_mean_elev_cce_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_mean_elev_cce_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##CALCULATE MEAN ELEVATION OF FCE
     if calc_mean_elev_fce:
-        def calc_mean_elev_fce_fx2(sp_code_st, resultsdir, sp_code):
+        def calc_mean_elev_fce_fx2(sp_code_st, resultsdir, sp_code): #landscape_factor_dir
             metric_NA=True
             bioregion_loc="%sbioregions.tif" %(landscape_factor_dir)
             bioregions=arcpy.Raster(bioregion_loc)
@@ -912,8 +1023,22 @@ try:
                     metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_mean_elev_fce_fx2, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_mean_elev_fce_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_mean_elev_fce_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##################
     ########END PART 1
@@ -1029,8 +1154,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(create_rep_zones_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(create_rep_zones_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(create_rep_zones_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ###############################
     ########END RESPONSE ZONE MAP
@@ -1040,7 +1179,7 @@ try:
 
     #CALC RESPONSE ZONE AREA
     if calc_resp_zone_area:
-        def calc_resp_zone_area_fx(sp_code_st, resultsdir, sp_code):
+        def calc_resp_zone_area_fx(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
 
@@ -1063,8 +1202,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_resp_zone_area_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_resp_zone_area_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_resp_zone_area_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ###RESPONSE ZONES ARE DEFINED ABOVE###
     ######START CALCULATING METRICS#######
@@ -1073,7 +1226,7 @@ try:
             #make all calcs using single raster with 3 zones
     #SLR
     if calc_zone_slr_area:
-        def calc_zone_slr_area_fx(sp_code_st, resultsdir, sp_code):
+        def calc_zone_slr_area_fx(sp_code_st, resultsdir, sp_code): #highest_slr_impact, landscape_factor_dir, island
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
 
@@ -1115,12 +1268,26 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_slr_area_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_slr_area_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_slr_area_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CALCULATE habitat area within young lava flows
     if calc_zone_lava_flow_area:
-        def calc_zone_lava_flow_area_fx(sp_code_st, resultsdir, sp_code):
+        def calc_zone_lava_flow_area_fx(sp_code_st, resultsdir, sp_code): #landscape_factor_dir
             metric_NA=True
             #Sp_index=all_sp_codes.index(sp_code)
             try:
@@ -1157,8 +1324,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_lava_flow_area_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_lava_flow_area_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_lava_flow_area_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #HABITAT QUALITY (UGLY)
     if calc_zone_hab_qual:
@@ -1184,8 +1365,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_hab_qual_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_hab_qual_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_hab_qual_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CALC EFFECTIVE HAB QUAL
     if calc_eff_hab_qual_nonpioneer:
@@ -1211,8 +1406,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_eff_hab_qual_nonpioneer_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_eff_hab_qual_nonpioneer_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_eff_hab_qual_nonpioneer_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CALC EFFECTIVE HAB QUAL
     if calc_eff_hab_qual_pioneer:
@@ -1239,8 +1448,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_eff_hab_qual_pioneer_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_eff_hab_qual_pioneer_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_eff_hab_qual_pioneer_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CREATE EFFECTIVE ZONES FOR HAB QUAL CALCULATIONS
     if chose_eff_hab_qual:
@@ -1284,8 +1507,22 @@ try:
                 metric_previously_done=True
                 metric_NA=False
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(chose_eff_hab_qual_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(chose_eff_hab_qual_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(chose_eff_hab_qual_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
 
     #HABITAT QUALITY (GOOD, BAD)
@@ -1322,8 +1559,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_hab_qual_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_hab_qual_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_hab_qual_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
     #FRAGMENTATION
     if calc_fragmentation:
         def calc_fragmentation_fx(sp_code_st, resultsdir, sp_code):
@@ -1411,8 +1662,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_fragmentation_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_fragmentation_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_fragmentation_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     ##Distance from top of island metric
     if calc_dist_to_top_of_island:
@@ -1467,8 +1732,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_dist_to_top_of_island_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_dist_to_top_of_island_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_dist_to_top_of_island_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #PROTECTED AREA
     if calc_protected_area:
@@ -1520,8 +1799,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_protected_area_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_protected_area_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_protected_area_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #UNGULATE FREE AREA
     if calc_ung_free_area:
@@ -1570,8 +1863,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_ung_free_area_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_ung_free_area_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_ung_free_area_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
     #CALC ZONE SLOPE MEAN, STDE
     #CALC SLOPE QUANTILES
     if calc_slope_metrics:
@@ -1613,8 +1920,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_slope_metrics_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_slope_metrics_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_slope_metrics_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #CALC CCE ASPECT MEAN, STDE [[arcgis does not like this calcualtion crashes often]]
     if calc_zone_aspect_mean:
@@ -1651,8 +1972,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_aspect_mean_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_aspect_mean_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_aspect_mean_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     if calc_zone_cos_aspect:
         def calc_zone_cos_aspect_fx(sp_code_st, resultsdir, sp_code):
@@ -1686,8 +2021,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_cos_aspect_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_cos_aspect_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_cos_aspect_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     if calc_zone_sin_aspect:
         def calc_zone_sin_aspect_fx(sp_code_st, resultsdir, sp_code):
@@ -1723,8 +2072,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_sin_aspect_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_sin_aspect_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_sin_aspect_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     if calc_zone_aspect_std:
         def calc_zone_aspect_std_fx(sp_code_st, resultsdir, sp_code):
@@ -1755,8 +2118,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_aspect_std_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_aspect_std_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_aspect_std_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
             #calc average precipitation gradient within zones:
     if calc_ppt_gradient:
@@ -1793,8 +2170,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_ppt_gradient_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_ppt_gradient_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_ppt_gradient_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
     #calc invasive suitability within zones:
     if calc_zone_invasibility:
@@ -1830,8 +2221,22 @@ try:
                 metric_NA=False
 
             return metric_previously_done, metric_NA
-        for i in range(len(CCE_Spp)):
-            va_metric_wrapper(calc_zone_invasibility_fx, i)
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calc_zone_invasibility_fx, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_zone_invasibility_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
 
         ##END LOOP
     try:

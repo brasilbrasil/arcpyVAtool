@@ -27,7 +27,11 @@ Roads_TigerLine_raster=arcpy.Raster("Roads_TigerLine_raster")
 HI_dem=arcpy.Raster("hi_dem")
 habqual_v3_4=arcpy.Raster("habqual_v3_4")
 HIGAP_22Sep14=arcpy.Raster("HIGAP_22Sep14")
-
+island=arcpy.sa.SetNull(habqual_v3_4,1,"Value < 1")
+habqual_v3_4_ugly=arcpy.sa.SetNull(habqual_v3_4,1,"Value <> 1")
+habqual_v3_4_bare=arcpy.sa.SetNull(habqual_v3_4,1,"Value <> 4")
+habqual_v3_4_ugly=habqual_v3_4_ugly*island
+habqual_v3_4_bare=habqual_v3_4_bare*island
 
 raster_loc=wd+"Roads_TigerLine_raster.tif" #name of raster file to save output
 arcpy.CopyRaster_management(Roads_TigerLine_raster, raster_loc, "", "0", "0", "", "", "1_BIT", "", "")
@@ -37,6 +41,12 @@ arcpy.CopyRaster_management(HI_dem, raster_loc, "", "0", "0", "", "", "16_BIT_UN
 
 raster_loc=wd+"habqual_v3_4.tif" #name of raster file to save output
 arcpy.CopyRaster_management(habqual_v3_4, raster_loc, "", "0", "0", "", "", "4_BIT", "", "")
+
+raster_loc=wd+"habqual_v3_4_ugly.tif" #name of raster file to save output
+arcpy.CopyRaster_management(habqual_v3_4_ugly, raster_loc, "", "0", "0", "", "", "4_BIT", "", "")
+
+raster_loc=wd+"habqual_v3_4_bare.tif" #name of raster file to save output
+arcpy.CopyRaster_management(habqual_v3_4_bare, raster_loc, "", "0", "0", "", "", "4_BIT", "", "")
 
 raster_loc=wd+"HIGAP_22Sep14.tif" #name of raster file to save output
 arcpy.CopyRaster_management(HIGAP_22Sep14, raster_loc, "", "0", "0", "", "", "8_BIT_UNSIGNED", "", "")

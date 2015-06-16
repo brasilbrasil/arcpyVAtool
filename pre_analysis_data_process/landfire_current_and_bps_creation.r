@@ -1,7 +1,6 @@
 rm(list = ls()) #remove all past worksheet variables
 library(raster)
 library(stringr)
-library(biomod2)
 
 ###USER CONFIGURATION
 working_dir="Y:/PICCC_data/VA data/Phase2/veg_data/" #this is where r will create a mirror folder structure with the 
@@ -19,12 +18,13 @@ writeRaster(landfire_reclass, "landfire_reclassed.tif", format="GTiff", overwrit
 clim_data_dir="Y:/PICCC_data/climate_data/bioclim_data_Aug2013/complete_rasters/allYrs_avg/bioclims_abs/all_baseline/125m/" #this is the root directory of all the current env rasters
 biovars2000 = raster(paste(clim_data_dir, "bio1.tif", sep=""))
 landfire_reclass=raster("landfire_reclassed.tif")
-low_res_raster_proj_res=res(landfire_reclass)[1]
-high_res_raster_proj_res=res(biovars2000)[1]
+low_res_raster_proj_res=res(biovars2000)[1]
+high_res_raster_proj_res=res(landfire_reclass)[1]
 res_ratio=round(low_res_raster_proj_res/high_res_raster_proj_res)
-landfire_reclass_aggregate=aggregate(landfire_reclass, 3, fun=modal, expand=TRUE)
-original_veg_map=resample(landfire_reclass_aggregate, biovars2000, method='ngb')
-writeRaster(original_veg_map, "landfire_reclassed_125m.tif", format="GTiff", overwrite=TRUE)
+landfire_reclass_aggregate=aggregate(landfire_reclass, res_ratio, fun=modal, expand=TRUE)
+landfire_reclass_aggregate=resample(landfire_reclass_aggregate, biovars2000, method='ngb')
+landfire_reclass_aggregate=projectRaster(landfire_reclass_aggregate, crs=CRS("+init=epsg:26904")) # #NAD83 zone 4N
+writeRaster(landfire_reclass_aggregate, "landfire_reclassed_125m_UTM_NAD83.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
 
 
 #LANDFIRE BPS
@@ -40,11 +40,12 @@ writeRaster(landfire_BPS_reclass, "landfire_BPS_reclassed.tif", format="GTiff", 
 # ###resample
 clim_data_dir="Y:/PICCC_data/climate_data/bioclim_data_Aug2013/complete_rasters/allYrs_avg/bioclims_abs/all_baseline/125m/" #this is the root directory of all the current env rasters
 biovars2000 = raster(paste(clim_data_dir, "bio1.tif", sep=""))
-landfire_BPS_reclass=raster("landfire_BPS_reclass.tif")
+landfire_BPS_reclass=raster("landfire_BPS_reclassed.tif")
 low_res_raster_proj_res=res(biovars2000)[1]
 high_res_raster_proj_res=res(landfire_BPS_reclass)[1]
 res_ratio=round(low_res_raster_proj_res/high_res_raster_proj_res)
 landfire_BPS_reclass_aggregate=aggregate(landfire_BPS_reclass, res_ratio, fun=modal, expand=TRUE)
-original_veg_map=resample(landfire_BPS_reclass_aggregate, biovars2000, method='ngb')
-writeRaster(original_veg_map, "landfire_BPS_reclassed_125m.tif", format="GTiff", overwrite=TRUE)
+landfire_BPS_reclass_aggregate=resample(landfire_BPS_reclass_aggregate, biovars2000, method='ngb')
+landfire_BPS_reclass_aggregate=projectRaster(landfire_BPS_reclass_aggregate, crs=CRS("+init=epsg:26904"))
+writeRaster(landfire_BPS_reclass_aggregate, "landfire_BPS_reclassed_125m_UTM_NAD83.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
 

@@ -120,6 +120,7 @@ northness=northness*100
 westness=westness*100
 terrain_var=terrain_var*100
 
+
 alltopo = stack(alltopo[[5]], TRASP, alltopo[[4]], alltopo[[4]], alltopo[[3]], alltopo[[1]], northness, westness, slpsinaspect, slpcosaspect, terrain_var)
 names(alltopo)<-c("Aspect", "TRASP", "slope", "tpi", "roughness", "tri", "northness", "westness", "slpsinaspect", "slpcosaspect", "terrain_var")
 ####PLOT ALL TOPO INDICES, CHECK TO MAKE SURE THEY COME OUT WITHOUT ODD "NO DATA" LINES OR PIXELS RUNNING THROUGH THEM####
@@ -128,6 +129,11 @@ plot(alltopo)
 allTopoRound=round(alltopo)
 names(allTopoRound)<-c("Aspect", "TRASP", "slope", "tpi", "roughness", "tri", "northness", "westness", "slpsinaspect", "slpcosaspect", "terrain_var")
 writeRaster(allTopoRound, "alltopo_10m_layer_rounded.tif", format='GTiff', options=c("COMPRESS=LZW"),  overwrite=TRUE,bylayer=TRUE, suffix='names', datatype='INT2S') #
+
+terrain_var_mean=raster("terrain_var_mean.tif")
+terrain_var_mean=terrain_var_mean*100
+terrain_var_mean_rounded=round(terrain_var_mean)
+writeRaster(terrain_var_mean_rounded, "terrain_var_mean_rounded.tif", format='GTiff', options=c("COMPRESS=LZW"),  overwrite=TRUE,bylayer=F, suffix='names', datatype='INT1U') #
 
 
 # #Terrain variability calc (places with maximum stdev of either northness, westness, or slope)

@@ -4,15 +4,15 @@
 
 #USER INPUT
 island="all" #
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns9/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
-CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/"
+CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
-ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/"
-max_search_dist_for_transition_zone= 5000 #in m
-use_bio_region_filter=0
-subset_of_CEs=[3,5] #1084 leave empty [] for no subset, if subset: [300,400]
-import_cce_list=False
-use_effective_CE_mask=True
+ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files
+use_bio_region_filter=0 #
+subset_of_CEs=[3,6] #1084 leave empty [] for no subset, if subset: [300,400]
+import_cce_list=False #option to provide list of species names
+use_effective_CE_mask=True #remove non-habitat areas from habitat quality calculations
 use_zonal_stats=1 #SIMPLIFY
 all_files_in_directory=1 #SIMPLIFY #1 to do batch processing of all files in a directory, 0 if want to specify which species below
 reverse_spp_order=False
@@ -20,12 +20,19 @@ keep_intermediary_output=0 #enter 1 for debug reasons, will a lot of intermediar
 #send_email_error_message=0
 overwrite=0
 sp_envelope_gap=0 #REMOVE?? #this will avoid the computationally intensive mapping of the transition zone if value is 0
+max_search_dist_for_transition_zone= 5000 #in m #only used if trying to interpolate areas between response zones. This parameter determines the distance
 parallel=False #for multiprocessing across species
 
 #what pieces to run?
 pre_process_envelopes=True
 calculate_veg_type_areas_current=True
 calculate_veg_type_areas_BPS=True
+calculate_native_habitat_areas_HIGAP=True
+calculate_all_habitat_areas_HIGAP=True
+calculate_native_habitat_areas_LANDFIRE=True
+calculate_all_habitat_areas_LANDFIRE=True
+calculate_native_habitat_areas_BPS_LANDFIRE=True
+calculate_change_in_n_available_habitat=True
 calc_cce_total_area=True
 calc_fce_total_area=True
 calc_cce_fce_dif=True
@@ -61,7 +68,6 @@ calc_ppt_gradient=True
 calc_zone_invasibility=True
 
 #START UNDERHOOD
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns4/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 resultsdir0=r"%sresults/%s/" %(rootdir, island)
 datadir=ce_data_dir
 
@@ -367,6 +373,7 @@ try:
     veg_zone_layer="%sveg_zones2" %(landscape_factor_dir)
     veg_zone_layer=arcpy.Raster(veg_zone_layer)
 
+    #load current landfire map
     veg_types_layer_current="%slandfire_reclassed_125m_UTM_NAD83.tif" %(landscape_factor_dir) #HI_110BPS.tif
     #veg_types_layer_current="%slandfire_reclass_wetland_coastal_UTM_8b.tif" %(landscape_factor_dir) #HI_110BPS.tif
     #veg_types_layer_current="%sHI_110BPS.tif" %(landscape_factor_dir) #HI_110BPS.tif
@@ -374,10 +381,47 @@ try:
     arcpy.BuildRasterAttributeTable_management(veg_types_layer_current, "NONE")
     arcpy.CalculateStatistics_management(veg_types_layer_current, "", "", "", "SKIP_EXISTING")
 
+    #load BPS landfire map
     veg_types_layer_BPS="%slandfire_BPS_reclassed_125m_UTM_NAD83.tif" %(landscape_factor_dir) #HI_110BPS.tif
     veg_types_layer_BPS=arcpy.Raster(veg_types_layer_BPS)
     arcpy.BuildRasterAttributeTable_management(veg_types_layer_BPS, "NONE")
     arcpy.CalculateStatistics_management(veg_types_layer_BPS, "", "", "", "SKIP_EXISTING")
+
+    #LOAD SIMPLIFIED VEGETATION MAPS
+    #These are maps that cover is simplified into broad categories of habitat:
+    #forest, Shrubland, grassland, bog, cliff, coastal, wetland, other
+    #each map (except BPS) has a version only including native areas, or including all native/alien areas
+    #so the metrics generated can be chosen depending if a species can inhabit alien habitat.
+
+    #current native habitat (HIGAP)
+    HIGAP_revised_simple_native_veg="%srevisedHIGAP/HIGAP_revised_simple_native_veg.tif" %(landscape_factor_dir) #HI_110BPS.tif
+    HIGAP_revised_simple_native_veg=arcpy.Raster(HIGAP_revised_simple_native_veg)
+    arcpy.BuildRasterAttributeTable_management(HIGAP_revised_simple_native_veg, "NONE")
+    arcpy.CalculateStatistics_management(HIGAP_revised_simple_native_veg, "", "", "", "SKIP_EXISTING")
+
+    #current total habitat (HIGAP)
+    HIGAP_revised_simple_native_and_alien_veg="%srevisedHIGAP/HIGAP_revised_simple_native_and_alien_veg.tif" %(landscape_factor_dir) #HI_110BPS.tif
+    HIGAP_revised_simple_native_and_alien_veg=arcpy.Raster(HIGAP_revised_simple_native_and_alien_veg)
+    arcpy.BuildRasterAttributeTable_management(HIGAP_revised_simple_native_and_alien_veg, "NONE")
+    arcpy.CalculateStatistics_management(HIGAP_revised_simple_native_and_alien_veg, "", "", "", "SKIP_EXISTING")
+
+    #current native habitat (LANDFIRE)
+    landfire_veg_cover_500m_simple_native_veg="%srevisedHIGAP/landfire_veg_cover_500m_simple_native_veg.tif" %(landscape_factor_dir) #HI_110BPS.tif
+    landfire_veg_cover_500m_simple_native_veg=arcpy.Raster(landfire_veg_cover_500m_simple_native_veg)
+    arcpy.BuildRasterAttributeTable_management(landfire_veg_cover_500m_simple_native_veg, "NONE")
+    arcpy.CalculateStatistics_management(landfire_veg_cover_500m_simple_native_veg, "", "", "", "SKIP_EXISTING")
+
+    #current total habitat (LANDFIRE)
+    landfire_veg_cover_500m_simple_native_and_alien_veg="%srevisedHIGAP/landfire_veg_cover_500m_simple_native_and_alien_veg.tif" %(landscape_factor_dir) #HI_110BPS.tif
+    landfire_veg_cover_500m_simple_native_and_alien_veg=arcpy.Raster(landfire_veg_cover_500m_simple_native_and_alien_veg)
+    arcpy.BuildRasterAttributeTable_management(landfire_veg_cover_500m_simple_native_and_alien_veg, "NONE")
+    arcpy.CalculateStatistics_management(landfire_veg_cover_500m_simple_native_and_alien_veg, "", "", "", "SKIP_EXISTING")
+
+    #original native habitat (LANDFIRE BPS)
+    HI_110BPS_simple_native_veg="%srevisedHIGAP/HI_110BPS_simple_native_veg.tif" %(landscape_factor_dir) #HI_110BPS.tif
+    HI_110BPS_simple_native_veg=arcpy.Raster(HI_110BPS_simple_native_veg)
+    arcpy.BuildRasterAttributeTable_management(HI_110BPS_simple_native_veg, "NONE")
+    arcpy.CalculateStatistics_management(HI_110BPS_simple_native_veg, "", "", "", "SKIP_EXISTING")
 
 
     #CO_data=r"%scorrected_CO_data2_merged_and_filtered.shp" %(CAO_data_dir) #corrected_CO_dataXY
@@ -612,6 +656,278 @@ try:
                 #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
+
+    if calculate_native_habitat_areas_HIGAP:
+        def calculate_native_habitat_areas_HIGAP_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                #CALC area in each habitat type
+                opath="%sDBFs/native_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath)==False or overwrite==1:
+                    CCE_temp=arcpy.Raster(loc_COR_CCE)
+                    inRaster = CCE_temp
+                    outname=r"%sDBFs/native_habitat_areas_HIGAP%s.dbf" %(resultsdir,sp_code_st)
+                    arcpy.sa.TabulateArea(CCE_temp,"VALUE",HIGAP_revised_simple_native_veg,"VALUE",outname)
+                    temp_zones= range(1,8) #only classes 1-7, excluding 10 (other/ non vegetated)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+
+                    save_temp_csv_data(veg_area, opath)
+                    del CCE_temp; del inRaster; del outname; del veg_area; del opath;
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_native_habitat_areas_HIGAP_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_native_habitat_areas_HIGAP_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+    if calculate_all_habitat_areas_HIGAP:
+        def calculate_all_habitat_areas_HIGAP_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                #CALC area in each habitat type
+                opath="%sDBFs/all_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath)==False or overwrite==1:
+                    CCE_temp=arcpy.Raster(loc_COR_CCE)
+                    inRaster = CCE_temp
+                    outname=r"%sDBFs/all_habitat_areas_HIGAP%s.dbf" %(resultsdir,sp_code_st)
+                    arcpy.sa.TabulateArea(CCE_temp,"VALUE",HIGAP_revised_simple_native_and_alien_veg,"VALUE",outname)
+                    temp_zones=range(1,8) #only classes 1-7, excluding 10 (other/ non vegetated)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+
+                    save_temp_csv_data(veg_area, opath)
+                    del CCE_temp; del inRaster; del outname; del veg_area; del opath;
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_all_habitat_areas_HIGAP_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_all_habitat_areas_HIGAP_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+    if calculate_native_habitat_areas_LANDFIRE:
+        def calculate_native_habitat_areas_LANDFIRE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                #CALC area in each habitat type
+                opath="%sDBFs/native_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath)==False or overwrite==1:
+                    CCE_temp=arcpy.Raster(loc_COR_CCE)
+                    inRaster = CCE_temp
+                    outname=r"%sDBFs/native_habitat_areas_LANDFIRE%s.dbf" %(resultsdir,sp_code_st)
+                    arcpy.sa.TabulateArea(CCE_temp,"VALUE",landfire_veg_cover_500m_simple_native_veg,"VALUE",outname)
+                    temp_zones=range(1,8) #only classes 1-7, excluding 10 (other/ non vegetated)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+
+                    save_temp_csv_data(veg_area, opath)
+                    del CCE_temp; del inRaster; del outname; del veg_area; del opath;
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_native_habitat_areas_LANDFIRE_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_native_habitat_areas_LANDFIRE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+    if calculate_all_habitat_areas_LANDFIRE:
+        def calculate_all_habitat_areas_LANDFIRE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                #CALC area in each habitat type
+                opath="%sDBFs/all_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath)==False or overwrite==1:
+                    CCE_temp=arcpy.Raster(loc_COR_CCE)
+                    inRaster = CCE_temp
+                    outname=r"%sDBFs/all_habitat_areas_LANDFIRE%s.dbf" %(resultsdir,sp_code_st)
+                    arcpy.sa.TabulateArea(CCE_temp,"VALUE",landfire_veg_cover_500m_simple_native_and_alien_veg,"VALUE",outname)
+                    temp_zones=range(1,8) #only classes 1-7, excluding 10 (other/ non vegetated)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+
+                    save_temp_csv_data(veg_area, opath)
+                    del CCE_temp; del inRaster; del outname; del veg_area; del opath;
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_all_habitat_areas_LANDFIRE_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_all_habitat_areas_LANDFIRE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+    if calculate_native_habitat_areas_BPS_LANDFIRE:
+        def calculate_native_habitat_areas_BPS_LANDFIRE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                #CALC area in each habitat type
+                opath="%sDBFs/native_habitat_areas_BPS_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath)==False or overwrite==1:
+                    CCE_temp=arcpy.Raster(loc_COR_CCE)
+                    inRaster = CCE_temp
+                    outname=r"%sDBFs/native_habitat_areas_BPS_LANDFIRE%s.dbf" %(resultsdir,sp_code_st)
+                    arcpy.sa.TabulateArea(CCE_temp,"VALUE",HI_110BPS_simple_native_veg,"VALUE",outname)
+                    temp_zones=range(1,8) #only classes 1-7, excluding 10 (other/ non vegetated)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+
+                    save_temp_csv_data(veg_area, opath)
+                    del CCE_temp; del inRaster; del outname; del veg_area; del opath;
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_native_habitat_areas_BPS_LANDFIRE_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_native_habitat_areas_BPS_LANDFIRE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+    if calculate_change_in_n_available_habitat:
+        def calculate_change_in_n_available_habitat_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+            metric_NA=True
+            Sp_index=all_sp_codes.index(sp_code)
+            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+            if arcpy.Exists(loc_COR_CCE):
+                opath0="%sDBFs/change_in_n_available_habitat%s.csv" %(resultsdir,sp_code_st)
+                if arcpy.Exists(opath0)==False:
+                    opath1="%sDBFs/native_habitat_areas_BPS_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                    jnk=load_temp_csv_float_data(opath1)
+                    n_habitats_BPS=sum([x>0 for x in jnk])
+
+                    opath2="%sDBFs/all_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                    jnk=load_temp_csv_float_data(opath2)
+                    n_habitats_landfire_all=sum([x>0 for x in jnk])
+
+                    opath3="%sDBFs/native_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+                    jnk=load_temp_csv_float_data(opath3)
+                    n_habitats_landfire_native=sum([x>0 for x in jnk])
+
+                    opath4="%sDBFs/all_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+                    jnk=load_temp_csv_float_data(opath4)
+                    n_habitats_HIGAP_all=sum([x>0 for x in jnk])
+
+                    opath5="%sDBFs/native_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+                    jnk=load_temp_csv_float_data(opath5)
+                    n_habitats_HIGAP_native=sum([x>0 for x in jnk])
+
+                    n_habitats=[n_habitats_BPS, n_habitats_landfire_native, n_habitats_landfire_all, n_habitats_HIGAP_native, n_habitats_HIGAP_all]
+                    save_temp_csv_data(n_habitats, opath0)
+                    del opath1; del opath2; del opath3; del opath4; del opath5;
+                    del n_habitats_BPS; del n_habitats_landfire_all; del n_habitats_landfire_native
+                    del n_habitats_HIGAP_all; del n_habitats_HIGAP_native;
+
+                    #calc_area_dif(resultsdir,sp_code_st)
+
+                    metric_previously_done=False
+                    metric_NA=False
+                else:
+                    metric_previously_done=True
+                    metric_NA=False
+
+            return metric_previously_done, metric_NA
+        if not parallel:
+            for i in range(len(CCE_Spp)):
+                va_metric_wrapper(calculate_change_in_n_available_habitat_fx2, i)
+        else:
+            import itertools
+            import multiprocessing
+            from multiprocessing import Pool, freeze_support
+            if __name__ == '__main__':
+                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calculate_change_in_n_available_habitat_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                pool.close()
+                import time
+                time.sleep(10)
+                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                pool.terminate()
+                pool.join()
+
+
 
     if calc_cce_total_area:
         def calc_cce_total_area_fx2(sp_code_st, resultsdir, sp_code): #no other var calls

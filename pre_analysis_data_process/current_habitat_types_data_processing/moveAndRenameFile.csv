@@ -1,0 +1,8 @@
+New_name,Old_name,Source_dir,Exact,Dest_dir
+NA,HIGAP_moistureLessClass.tif,Y:/PICCC_analysis/community_SRE/necessary_data,Y,NA
+NA,HIGAP_moistureLessClass_500m.tif,Y:/PICCC_analysis/community_SRE/necessary_data,Y,NA
+NA,HiGAP_reconstructedMoisture_names.csv,Y:/PICCC_analysis/community_SRE/necessary_data/HIGAP,Y,NA
+NA,HiGAP_names.csv,Y:/PICCC_analysis/community_SRE/necessary_data/HIGAP,Y,NA
+future_moisture.tif,gbm.step_bio1_bio18_bio19_biasCor_0.8train_future_final_model.tif,Y:/PICCC_analysis/community_SRE/gbm_MZ_1_18_19_T80_n24/tifs,Y,NA
+baseline_moisture.tif,gbm.step_bio1_bio18_bio19_biasCor_0.8train_current_final_model.tif,Y:/PICCC_analysis/community_SRE/gbm_MZ_1_18_19_T80_n24/tifs,Y,NA
+NA,MZ_reclass.csv,Y:/PICCC_analysis/community_SRE/necessary_data,Y,NA

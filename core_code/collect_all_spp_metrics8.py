@@ -1,7 +1,7 @@
 #USER INPUT
 #datadir=r"Y:/Py_code/test/results/all/"
-datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns4/results/all/"
-sp_temps=range(3,4) #range(1,1115)
+datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns9/results/all/"
+sp_temps=range(3,7) #range(1,1115)
 bioreg_subset=0
 use_effective_CE_mask=True
 
@@ -48,6 +48,18 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'BPS_Other', 'BPS_Alpine_shrubland', 'BPS_Mixed_cliff_habitat', 'BPS_Dry_forest', 'BPS_Dry_grassland', 'BPS_Dry_shrubland', 'BPS_Coastal_strand',
     'BPS_Mesic_forest', 'BPS_Mesic_grassland', 'BPS_Mesic_shrubland', 'BPS_Bog', 'BPS_Wet_forest',
     'BPS_Wetlands_and_marshes', 'BPS_Barren', 'BPS_Mixed_introduced',
+    'HIGAP_all_Forest', 'HIGAP_all_Shrubland', 'HIGAP_all_Grassland', 'HIGAP_all_Bog',
+    'HIGAP_all_Cliff', 'HIGAP_all_Coastal', 'HIGAP_all_Wetland',
+    'HIGAP_native_Forest', 'HIGAP_native_Shrubland', 'HIGAP_native_Grassland', 'HIGAP_native_Bog',
+    'HIGAP_native_Cliff', 'HIGAP_native_Coastal', 'HIGAP_native_Wetland',
+    'LANDFIRE_all_Forest', 'LANDFIRE_all_Shrubland', 'LANDFIRE_all_Grassland', 'LANDFIRE_all_Bog',
+    'LANDFIRE_all_Cliff', 'LANDFIRE_all_Coastal', 'LANDFIRE_all_Wetland',
+    'LANDFIRE_native_Forest', 'LANDFIRE_native_Shrubland', 'LANDFIRE_native_Grassland', 'LANDFIRE_native_Bog',
+    'LANDFIRE_native_Cliff', 'LANDFIRE_native_Coastal', 'LANDFIRE_native_Wetland',
+    'BPS_native_Forest', 'BPS_native_Shrubland', 'BPS_native_Grassland', 'BPS_native_Bog',
+    'BPS_native_Cliff', 'BPS_native_Coastal', 'BPS_native_Wetland',
+    'n_habitats_BPS', 'n_habitats_landfire_native', 'n_habitats_landfire_all',
+    'n_habitats_HIGAP_native', 'n_habitats_HIGAP_all',
     'zone_areaMR', 'zone_areaTL', 'zone_areaMG', 'eff_zone_areaMR', 'eff_zone_areaTL', 'eff_zone_areaMG',
     'eff_pioneer_zone_areaMR', 'eff_pioneer_zone_areaTL', 'eff_pioneer_zone_areaMG', 'eff_hab_qual_areaMR', 'eff_hab_qual_areaTL', 'eff_hab_qual_areaMG',
     'zone_habitat_area_MR', 'zone_habitat_areaTL', 'zone_habitat_areaMG',
@@ -285,11 +297,49 @@ for sp_code_st in del_terms:
         #veg_area[:]=[eval(x) for x in veg_area]
     except:
         veg_area_BPS=['NA']*len(range(50,65))
+
+    #CCE HABITAT VALUES
+    try:
+        opath="%sDBFs/all_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+        all_habitat_areas_HIGAP=load_temp_csv_float_data(opath)
+    except:
+        all_habitat_areas_HIGAP=['NA']*7
+
+    try:
+        opath="%sDBFs/native_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
+        native_habitat_areas_HIGAP=load_temp_csv_float_data(opath)
+    except:
+        native_habitat_areas_HIGAP=['NA']*7
+
+    try:
+        opath="%sDBFs/all_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+        all_habitat_areas_LANDFIRE=load_temp_csv_float_data(opath)
+    except:
+        all_habitat_areas_LANDFIRE=['NA']*7
+
+    try:
+        opath="%sDBFs/native_habitat_areas_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+        native_habitat_areas_LANDFIRE=load_temp_csv_float_data(opath)
+    except:
+        native_habitat_areas_LANDFIRE=['NA']*7
+
+    try:
+        opath="%sDBFs/native_habitat_areas_BPS_LANDFIRE%s.csv" %(resultsdir,sp_code_st)
+        native_habitat_areas_BPS_LANDFIRE=load_temp_csv_float_data(opath)
+    except:
+        native_habitat_areas_BPS_LANDFIRE=['NA']*7
+
+    try:
+        opath="%sDBFs/change_in_n_available_habitat%s.csv" %(resultsdir,sp_code_st)
+        change_in_n_available_habitat=load_temp_csv_float_data(opath)
+    except:
+        change_in_n_available_habitat=['NA']*5
+
     #################
     #######END PART 1
     #################
 
-    #CALC RESONSE ZONE AREA
+    #CALC RESPONSE ZONE AREA
     try:
         path_zone_index=r"%sDBFs/%s_zone_index.csv" %(resultsdir, sp_code_st)
         path_zone_area=r"%sDBFs/%s_zone_area.csv" %(resultsdir, sp_code_st)
@@ -634,6 +684,12 @@ for sp_code_st in del_terms:
     Sp_data.append(prop_bioreg_near_top)
     Sp_data.extend(veg_area)
     Sp_data.extend(veg_area_BPS)
+    Sp_data.extend(all_habitat_areas_HIGAP)
+    Sp_data.extend(native_habitat_areas_HIGAP)
+    Sp_data.extend(all_habitat_areas_LANDFIRE)
+    Sp_data.extend(native_habitat_areas_LANDFIRE)
+    Sp_data.extend(native_habitat_areas_BPS_LANDFIRE)
+    Sp_data.extend(change_in_n_available_habitat)
     Sp_data.extend(total_zone_area)
     Sp_data.extend(zone_eff_nonpioneer)
     Sp_data.extend(zone_eff_pioneer)

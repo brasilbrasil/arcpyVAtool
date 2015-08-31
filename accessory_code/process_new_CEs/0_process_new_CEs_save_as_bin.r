@@ -52,32 +52,32 @@ bin_fx=function(tif_file_nm, source_dir.=source_dir, wd.=wd){
 
 
 
-#mosaic rasters:
-dir_list=list.dirs(path = wd, full.names = F, recursive = TRUE)
-dir_list=dir_list[-1]
-dir_selection=dir_list[1]
-
-sp_code=as.character(strsplit(dir_selection, " ")[[1]][1])
-library(stringr)
-sp_code=str_pad(sp_code, 4, pad = "0")
-
-maps=c("2000 range\\.tif", "2000\\-2090 difference\\.tif", "2090 range\\.tif")
-
-map=maps[1]
-for (map in maps){
-  tif_file_nms=list.files(dir_selection, pattern=paste0(map, "$"), recursive=T)
-  jnk=raster(paste0(dir_selection, "/", tif_file_nms[3]))
-  e=extent(-159.8003, -154.8053, 18.88725, 22.25325)
-  #plot(jnk)
-  jnk=extend(jnk, e, value=NA)
-  #plot(jnk)
-  
-  #m2 <- mosaic(tif_file_nms, fun=min)
-  
-  #m2 <- mosaic(s1, s2, s3, fun=min)
-  
-}
-
-islands=c("Hawaii", "Kahoolawe" , "Kauai", "Lanai", "Maui", "Molokai", "Oahu")
+# #mosaic rasters:
+# dir_list=list.dirs(path = wd, full.names = F, recursive = TRUE)
+# dir_list=dir_list[-1]
+# dir_selection=dir_list[1]
+# 
+# sp_code=as.character(strsplit(dir_selection, " ")[[1]][1])
+# library(stringr)
+# sp_code=str_pad(sp_code, 4, pad = "0")
+# 
+# maps=c("2000 range\\.tif", "2000\\-2090 difference\\.tif", "2090 range\\.tif")
+# 
+# map=maps[1]
+# for (map in maps){
+#   tif_file_nms=list.files(dir_selection, pattern=paste0(map, "$"), recursive=T)
+#   jnk=raster(paste0(dir_selection, "/", tif_file_nms[3]))
+#   e=extent(-159.8003, -154.8053, 18.88725, 22.25325)
+#   #plot(jnk)
+#   jnk=extend(jnk, e, value=NA)
+#   #plot(jnk)
+#   
+#   #m2 <- mosaic(tif_file_nms, fun=min)
+#   
+#   #m2 <- mosaic(s1, s2, s3, fun=min)
+#   
+# }
+# 
+# islands=c("Hawaii", "Kahoolawe" , "Kauai", "Lanai", "Maui", "Molokai", "Oahu")
 
 

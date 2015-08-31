@@ -4,13 +4,13 @@
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns9/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
 ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files
 use_bio_region_filter=0 #
-subset_of_CEs=[3,6] #1084 leave empty [] for no subset, if subset: [300,400]
+subset_of_CEs=[0,1084] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
 import_cce_list=False #option to provide list of species names
 use_effective_CE_mask=True #remove non-habitat areas from habitat quality calculations
 use_zonal_stats=1 #SIMPLIFY

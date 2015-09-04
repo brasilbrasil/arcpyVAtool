@@ -1,6 +1,6 @@
 #USER INPUT
 #datadir=r"Y:/Py_code/test/results/all/"
-datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns9/results/all/"
+datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns14/results/all/"
 sp_temps=range(3,7) #range(1,1115)
 bioreg_subset=0
 use_effective_CE_mask=True
@@ -60,6 +60,15 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'BPS_native_Cliff', 'BPS_native_Coastal', 'BPS_native_Wetland',
     'n_habitats_BPS', 'n_habitats_landfire_native', 'n_habitats_landfire_all',
     'n_habitats_HIGAP_native', 'n_habitats_HIGAP_all',
+    'E_Maui_area', 'E_Molokai_area', 'Hualalai_area', 'Kahoolawe_area', 'Kau_area',
+    'Kauai_area', 'Kilauea_area', 'Kohala_area', 'Kona_area', 'Koolau_area', 'Lanai_area',
+    'Mauna_Kea_area', 'NE_Mauna_Loa_area', 'Niihau_area', 'NW_Mauna_Loa_area',
+    'Waianae_area', 'W_Maui_area', 'W_Molokai_area', 'n_bioreg_in_CCE',
+    'Kau_Kilauea', 'Hualalai_Kona', 'Kona_Kau', 'Mauna_Kea_Kohala', 'NE_Mauna_Loa_Kau',
+    'NE_Mauna_Loa_Kilauea', 'NE_Mauna_Loa_Mauna_Kea', 'Hualalai_NW_Mauna_Loa',
+    'Kona_NW_Mauna_Loa', 'NW_Mauna_Loa_Mauna_Kea', 'NW_Mauna_Loa_NE_Mauna_Loa',
+    'Waianae_Koolau', 'E_Maui_W_Maui', 'E_Molokai_W_Molokai', 'n_bioreg_trans_in_CCE',
+    'CCE_mean_precip_CV', 'CCE_min_precip_CV', 'CCE_max_precip_CV', 'CCE_stdev_precip_CV',
     'zone_areaMR', 'zone_areaTL', 'zone_areaMG', 'eff_zone_areaMR', 'eff_zone_areaTL', 'eff_zone_areaMG',
     'eff_pioneer_zone_areaMR', 'eff_pioneer_zone_areaTL', 'eff_pioneer_zone_areaMG', 'eff_hab_qual_areaMR', 'eff_hab_qual_areaTL', 'eff_hab_qual_areaMG',
     'zone_habitat_area_MR', 'zone_habitat_areaTL', 'zone_habitat_areaMG',
@@ -334,6 +343,25 @@ for sp_code_st in del_terms:
         change_in_n_available_habitat=load_temp_csv_float_data(opath)
     except:
         change_in_n_available_habitat=['NA']*5
+
+    #NEW PLASTICITY METRICS
+    try:
+        opath="%sDBFs/count_cce_bioreg%s.csv" %(resultsdir,sp_code_st)
+        count_cce_bioreg=load_temp_csv_float_data(opath)
+    except:
+        count_cce_bioreg=['NA']*19
+
+    try:
+        opath="%sDBFs/count_cce_bioreg_transition_areas%s.csv" %(resultsdir,sp_code_st)
+        count_cce_bioreg_transition_areas=load_temp_csv_float_data(opath)
+    except:
+        count_cce_bioreg_transition_areas=['NA']*15
+
+    try:
+        opath="%sDBFs/cce_precip_interannual_var%s.csv" %(resultsdir,sp_code_st)
+        cce_precip_interannual_var=load_temp_csv_float_data(opath)
+    except:
+        cce_precip_interannual_var=['NA']*4
 
     #################
     #######END PART 1
@@ -690,6 +718,9 @@ for sp_code_st in del_terms:
     Sp_data.extend(native_habitat_areas_LANDFIRE)
     Sp_data.extend(native_habitat_areas_BPS_LANDFIRE)
     Sp_data.extend(change_in_n_available_habitat)
+    Sp_data.extend(count_cce_bioreg)
+    Sp_data.extend(count_cce_bioreg_transition_areas)
+    Sp_data.extend(cce_precip_interannual_var)
     Sp_data.extend(total_zone_area)
     Sp_data.extend(zone_eff_nonpioneer)
     Sp_data.extend(zone_eff_pioneer)

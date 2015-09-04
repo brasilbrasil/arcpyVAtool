@@ -1,16 +1,17 @@
 #disable background processing (arcgis geoprocessing options) as it does not work well- python will call variables for routines that are not yet complete from previous routine!!
 #python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpy.py
+#python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpyTEMP.py
 #if running parallel, must run this from cmd with script above, python must be on system path
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/testParallelRuns15/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
 ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files
 use_bio_region_filter=0 #
-subset_of_CEs=[3,10] #[3,60] [0,1084] 1084 leave empty [] for no subset, if subset: [300,400]
+subset_of_CEs=[0,1084] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
 import_cce_list=False #option to provide list of species names
 use_effective_CE_mask=True #remove non-habitat areas from habitat quality calculations
 use_zonal_stats=1 #SIMPLIFY
@@ -21,26 +22,26 @@ keep_intermediary_output=0 #enter 1 for debug reasons, will a lot of intermediar
 overwrite=0
 sp_envelope_gap=0 #REMOVE?? #this will avoid the computationally intensive mapping of the transition zone if value is 0
 max_search_dist_for_transition_zone= 5000 #in m #only used if trying to interpolate areas between response zones. This parameter determines the distance
-parallel=True #for multiprocessing across species
+parallel=False #for multiprocessing across species
 
 #what pieces to run?
-pre_process_envelopes=True
-calculate_veg_type_areas_current=True
-calculate_veg_type_areas_BPS=True
-calculate_native_habitat_areas_HIGAP=True
-calculate_all_habitat_areas_HIGAP=True
-calculate_native_habitat_areas_LANDFIRE=True
-calculate_all_habitat_areas_LANDFIRE=True
-calculate_native_habitat_areas_BPS_LANDFIRE=True
-calculate_change_in_n_available_habitat=True
-calc_cce_total_area=True
-calc_fce_total_area=True
-calc_cce_fce_dif=True
-map_tol_zone=True
-map_mrf_zone=True
-map_mig_zone_pt1=True
-calc_dist_fce_to_CCE=True
-calc_mean_elev_cce=True
+pre_process_envelopes=False
+calculate_veg_type_areas_current=False
+calculate_veg_type_areas_BPS=False
+calculate_native_habitat_areas_HIGAP=False
+calculate_all_habitat_areas_HIGAP=False
+calculate_native_habitat_areas_LANDFIRE=False
+calculate_all_habitat_areas_LANDFIRE=False
+calculate_native_habitat_areas_BPS_LANDFIRE=False
+calculate_change_in_n_available_habitat=False
+calc_cce_total_area=False
+calc_fce_total_area=False
+calc_cce_fce_dif=False
+map_tol_zone=False
+map_mrf_zone=False
+map_mig_zone_pt1=False
+calc_dist_fce_to_CCE=False
+calc_mean_elev_cce=False
 calc_mean_elev_fce=True
 count_cce_bioreg=True
 count_cce_bioreg_transition_areas=True
@@ -353,14 +354,8 @@ try:
     else:
         arcpy.env.workspace = datadir
         if all_files_in_directory==1:
-            import glob
-            jnk=glob.glob(datadir+"CCE*.tif")
-            CCE_Spp=[os.path.basename(x) for x in jnk]
-            jnk=glob.glob(datadir+"FCE*.tif")
-            FCE_Spp=[os.path.basename(x) for x in jnk]
-
-            #FCE_Spp = arcpy.ListRasters("FCE*", "tif")
-            #CCE_Spp = arcpy.ListRasters("CCE*", "tif")
+            FCE_Spp = arcpy.ListRasters("FCE*", "tif")
+            CCE_Spp = arcpy.ListRasters("CCE*", "tif")
             if len(subset_of_CEs)>0:
                 FCE_Spp=FCE_Spp[subset_of_CEs[0]:subset_of_CEs[1]]
                 CCE_Spp=CCE_Spp[subset_of_CEs[0]:subset_of_CEs[1]]
@@ -1373,17 +1368,22 @@ try:
                                 FCE_stdev_elev=0 #this is necessary if there is single pixel envelope
                             jnk=[FCE_mean_elev, FCE_min_elev, FCE_max_elev, FCE_stdev_elev]
                             save_temp_csv_data(jnk, opath)
+                            print "done calculating FCE mean elev"
 
                         if arcpy.Exists(opath2)==False or overwrite==1:
                             loc_min_elev_FCE_table=r"%sDBFs/min_elev_FCE_%s.dbf" %(resultsdir,sp_code_st)
                             arcpy.sa.ZonalStatisticsAsTable(bioregions,"VALUE", FCE_DEM_temp, loc_min_elev_FCE_table)
+                            print "done calculating FCE elev by bioreg"
+
                             tmp_zn=range(0,18)
                             stat='MIN'
                             #min_elev_zone_vals=read_dbf_stat_vals(loc_min_elev_FCE_table, stat, tmp_zn) #
                             min_elev_zone_vals=zonal_area_from_dbf_byCol(loc_min_elev_FCE_table, tmp_zn, stat, multFactor=1)
+                            print "done extracting FCE min elev by bioreg"
                             stat='MAX'
                             #max_elev_zone_vals=read_dbf_stat_vals(loc_min_elev_FCE_table, stat, tmp_zn)
                             max_elev_zone_vals=zonal_area_from_dbf_byCol(loc_min_elev_FCE_table, tmp_zn, stat, multFactor=1)
+                            print "done extracting FCE max elev by bioreg"
 
                             if kio==0:
                                 try:
@@ -1391,6 +1391,7 @@ try:
                                     arcpy.Delete_management(FCE_DEM_temp)
                                 except:
                                     pass
+                            print "saving min and max bioreg FCE elev"
                             save_temp_csv_data(min_elev_zone_vals, opath1)
                             save_temp_csv_data(max_elev_zone_vals, opath2)
                     else:
@@ -1421,6 +1422,7 @@ try:
                 pool.terminate()
                 pool.join()
 
+
     if count_cce_bioreg:
         def calculate_count_cce_bioreg_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
@@ -1437,9 +1439,7 @@ try:
                     outname=r"%sDBFs/count_cce_bioreg%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
                     tmp_zn=range(0,18)
-                    veg_area=zonal_area_from_dbf2(outname, tmp_zn)
-                    n_areas=sum([x>0 for x in veg_area])
-                    veg_area.append(n_areas)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1472,7 +1472,7 @@ try:
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
-            bioregion_loc="%sbioregions_boundaries_buffer_no_coastal.tif" %(landscape_factor_dir)
+            bioregion_loc="%sbioregions.tif" %(landscape_factor_dir)
             bioregions=arcpy.Raster(bioregion_loc)
             if arcpy.Exists(loc_COR_CCE):
                 #CALC area in each habitat type
@@ -1482,10 +1482,8 @@ try:
                     inRaster = CCE_temp
                     outname=r"%sDBFs/count_cce_bioreg_transition_areas%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
-                    tmp_zn=range(1,15)
-                    veg_area=zonal_area_from_dbf2(outname, tmp_zn)
-                    n_areas=sum([x>0 for x in veg_area])
-                    veg_area.append(n_areas)
+                    tmp_zn=range(0,18)
+                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1512,60 +1510,6 @@ try:
                 #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
-
-    ##CALCULATE calc_cce_precip_interannual_var
-    if calc_cce_precip_interannual_var:
-        def calc_cce_precip_interannual_var_fx2(sp_code_st, resultsdir, sp_code): #landscape_factor_dir,island
-            metric_NA=True
-            inRasterloc2 = r"%shist_ppt_var/annual_CV.tif" %(landscape_factor_dir)
-            Sp_index=all_sp_codes.index(sp_code)
-            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
-            if arcpy.Exists(loc_COR_CCE):
-                opath="%sDBFs/cce_precip_interannual_var%s.csv" %(resultsdir,sp_code_st)
-                if arcpy.Exists(opath)==False or overwrite==1:
-                    CCE_temp=arcpy.Raster(loc_COR_CCE)
-                    CCE_DEM_temp=CCE_temp*arcpy.Raster(inRasterloc2)
-                    CCE_mean_elev=get_num_attributes(CCE_DEM_temp,"MEAN")
-                    CCE_min_elev=get_num_attributes(CCE_DEM_temp,"MINIMUM")
-                    CCE_max_elev=get_num_attributes(CCE_DEM_temp,"MAXIMUM")
-                    CCE_stdev_elev=get_num_attributes(CCE_DEM_temp,"STD")
-                    if kio==0:
-                        try:
-                            arcpy.Delete_management(CCE_DEM_temp)
-                        except:
-                            pass
-
-                    jnk=[CCE_mean_elev, CCE_min_elev, CCE_max_elev, CCE_stdev_elev]
-                    save_temp_csv_data(jnk, opath)
-                #else:
-                #       jnk=load_temp_csv_float_data(opath)
-                #       CCE_mean_elev=jnk[0]
-                #       CCE_min_elev=jnk[1]
-                #       CCE_max_elev=jnk[2]
-                    metric_previously_done=False
-                    metric_NA=False
-                else:
-                    metric_previously_done=True
-                    metric_NA=False
-
-            return metric_previously_done, metric_NA
-        if not parallel:
-            for i in range(len(CCE_Spp)):
-                va_metric_wrapper(calc_cce_precip_interannual_var_fx2, i)
-        else:
-            import itertools
-            import multiprocessing
-            from multiprocessing import Pool, freeze_support
-            if __name__ == '__main__':
-                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
-                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_cce_precip_interannual_var_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
-                pool.close()
-                import time
-                time.sleep(10)
-                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
-                pool.terminate()
-                pool.join()
-
 
     ##################
     ########END PART 1
@@ -2844,7 +2788,7 @@ except arcpy.ExecuteError:
     arcpy.AddError(msgs) # Return tool error messages for use with a script tool
     print msgs # Print tool error messages for use in Python/PythonWin
 
-except socket.error as error: #http://stackoverflow.com/questions/18832643/how-to-catch-this-python-exception-error-errno-10054-an-existing-connection
+except socket.error as error:
     if error.errno == errno.WSAECONNRESET:
         reconnect()
         retry_action()

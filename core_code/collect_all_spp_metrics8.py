@@ -1,7 +1,7 @@
 #USER INPUT
 #datadir=r"Y:/Py_code/test/results/all/"
-datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/testRuns14/results/all/"
-sp_temps=range(3,7) #range(1,1115)
+datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/results/all/"
+sp_temps=range(1,1115) #range(1,1115)
 bioreg_subset=0
 use_effective_CE_mask=True
 
@@ -69,23 +69,23 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'Kona_NW_Mauna_Loa', 'NW_Mauna_Loa_Mauna_Kea', 'NW_Mauna_Loa_NE_Mauna_Loa',
     'Waianae_Koolau', 'E_Maui_W_Maui', 'E_Molokai_W_Molokai', 'n_bioreg_trans_in_CCE',
     'CCE_mean_precip_CV', 'CCE_min_precip_CV', 'CCE_max_precip_CV', 'CCE_stdev_precip_CV',
-    'zone_areaMR', 'zone_areaTL', 'zone_areaMG', 'eff_zone_areaMR', 'eff_zone_areaTL', 'eff_zone_areaMG',
-    'eff_pioneer_zone_areaMR', 'eff_pioneer_zone_areaTL', 'eff_pioneer_zone_areaMG', 'eff_hab_qual_areaMR', 'eff_hab_qual_areaTL', 'eff_hab_qual_areaMG',
-    'zone_habitat_area_MR', 'zone_habitat_areaTL', 'zone_habitat_areaMG',
-    'Sp_pioneer_status', 'zone_lavaflow_area_MR', 'zone_lavaflow_areaTL', 'zone_lavaflow_areaMG',
-    'MR_ugly', 'TL_ugly', 'MG_ugly', 'MR_bad', 'TL_bad', 'MG_bad', 'MR_good', 'TL_good', 'MG_good',
-    'MR_protected_area', 'TL_protected_area', 'MG_protected_area', 'MR_Ung_free_Areas', 'TL_Ung_free_Areas', 'MG_Ung_free_Areas',
-    'persist_in_alien_hab', 'MRzone_edge', 'TLzone_edge', 'MGzone_edge', 'MRzone_core', 'TLzone_core', 'MGzone_core',
-    'MRF_fragmentation', 'Tol_fragmentation','Mig_fragmentation',
-    'MRzone_slr', 'TLzone_slr', 'MGzone_slr', 'MR_mean_ppt_gradient', 'TL_mean_ppt_gradient', 'MG_mean_ppt_gradient',
-    'MR_mean_inv_suitability', 'TL_mean_inv_suitability', 'MG_mean_inv_suitability',
-    'Topo_complexity_MR', 'Topo_complexity_TL', 'Topo_complexity_MG',
+    'zone_area__MR', 'zone_area___TL', 'zone_area__MG', 'eff_zone_area__MR', 'eff_zone_area__TL', 'eff_zone_area__MG',
+    'eff_pioneer_zone_area__MR', 'eff_pioneer_zone_area__TL', 'eff_pioneer_zone_area__MG', 'eff_hab_qual_area__MR', 'eff_hab_qual_area__TL', 'eff_hab_qual_area__MG',
+#    'zone_habitat_area__MR', 'zone_habitat_area__TL', 'zone_habitat_area__MG',
+    'Sp_pioneer_status', 'zone_lavaflow_area__MR', 'zone_lavaflow_area__TL', 'zone_lavaflow_area__MG',
+    'ugly__MR', 'ugly__TL', 'ugly__MG', 'bad__MR', 'bad__TL', 'bad__MG', 'good__MR', 'good__TL', 'good__MG',
+    'protected_area__MR', 'protected_area__TL', 'protected_area__MG', 'Ung_free_Areas__MR', 'Ung_free_Areas__TL', 'Ung_free_Areas__MG',
+    'persist_in_alien_hab', 'zone_edge__MR', 'zone_edge__TL', 'zone_edge__MG', 'zone_core__MR', 'zone_core__TL', 'zone_core__MG',
+    'fragmentation__MR', 'fragmentation__TL','fragmentation__MG',
+    'zone_slr__MR', 'zone_slr__TL', 'zone_slr__MG', 'mean_ppt_gradient__MR', 'mean_ppt_gradient__TL', 'mean_ppt_gradient__MG',
+    'mean_inv_suitability__MR', 'mean_inv_suitability__TL', 'mean_inv_suitability__MG',
+    'Topo_complexity__MR', 'Topo_complexity__TL', 'Topo_complexity__MG',
 #    'Zone_slope_medMR', 'Zone_slope_medTL', 'Zone_slope_medMG',
 #    'Zone_slope_minMR', 'Zone_slope_minTL', 'Zone_slope_minMG', 'Zone_slope_maxMR', 'Zone_slope_maxTL', 'Zone_slope_maxMG',
 #    'Zone_slope_stdMR', 'Zone_slope_stdTL', 'Zone_slope_stdMG',
 #    'Zone_slope_cvMR', 'Zone_slope_cvTL', 'Zone_slope_cvMG', 'zone_aspect_meanMR', 'zone_aspect_meanTL', 'zone_aspect_meanMG',
 #    'zone_aspect_stdMR', 'zone_aspect_stdTL', 'zone_aspect_stdMG',
-    'total_CO_points', 'total_zone_pts', 'pct CO in MR', 'pct_CO_in_TL', 'pct CO in MG',
+    'total_CO_points', 'total_zone_pts', 'pct CO in MR', 'pct_CO_in__TL', 'pct CO in MG',
     'pts in alp', 'pts in nat pioneer', 'pts in low dry', 'pts in mont dry', 'pts in subalpine',
     'pts in low mes', 'pts in mont mes', 'pts in low wet',
     'pts in mont wet', 'lavaflows MR pts', 'lavaflows TL pts', 'lavaflows MG pts', 'ung_free MR pts', 'ung_free TL pts', 'ung_free MG pts',
@@ -410,14 +410,14 @@ for sp_code_st in del_terms:
         zone_area_weights=['NA']*3
 
     ##RESPONSE ZONES ARE DEFINED ABOVE###
-    try:
-        opath=r"%sDBFs/%s_zone_compatible_habitat.csv" %(resultsdir, sp_code_st)
-        f = open(opath, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is
-        reader = csv.reader(f)
-        zone_compatible_habitat= reader.next()
-        zone_compatible_habitat[:]=[float(x) for x in zone_compatible_habitat]
-    except:
-        zone_compatible_habitat=['NA']*3
+##    try:
+##        opath=r"%sDBFs/%s_zone_compatible_habitat.csv" %(resultsdir, sp_code_st)
+##        f = open(opath, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is
+##        reader = csv.reader(f)
+##        zone_compatible_habitat= reader.next()
+##        zone_compatible_habitat[:]=[float(x) for x in zone_compatible_habitat]
+##    except:
+##        zone_compatible_habitat=['NA']*3
 
     #FRAGMENTATION
     try:
@@ -434,6 +434,8 @@ for sp_code_st in del_terms:
         bioreg_max_biome_elev= eval(jnk[1])
         bioreg_max_biome_elev[:]=[float(x) for x in bioreg_max_biome_elev]
         zone_edge_biome= eval(jnk[2])
+        #zone_edge_biome[:]=[float(x) for x in zone_edge_biome]
+        #zone_edge_biome=[i/j for i, j in zip(zone_edge_biome,zone_area)]
         zone_edge_biome=[numpy.float64(i)/j for i, j in zip(zone_edge_biome,zone_area)]
         zone_core_biome0=eval(jnk[3])
         zone_core_biome=[numpy.float64(i)/j for i, j in zip(zone_core_biome0,zone_area)]
@@ -725,7 +727,7 @@ for sp_code_st in del_terms:
     Sp_data.extend(zone_eff_nonpioneer)
     Sp_data.extend(zone_eff_pioneer)
     Sp_data.extend(zone_eff_hab_qual)
-    Sp_data.extend(zone_compatible_habitat)
+##    Sp_data.extend(zone_compatible_habitat)
     Sp_data.append(Sp_pioneer_status)
     Sp_data.extend(zone_lava_flows)
     Sp_data.extend(Zone_ugly_hab)

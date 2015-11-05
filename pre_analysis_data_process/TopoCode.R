@@ -1,7 +1,7 @@
 library(raster)
 library(rgdal)
 #####SET DIRECTORIS AND PERSONAL INFO####
-Topowd<-("D:/PICCC_data/DEM_data_HI/") #running on beast up to line 11
+Topowd<-("Y:/PICCC_data/DEM_data_HI/") #running on beast up to line 11
 setwd(Topowd)
 #memory.limit(size=2400000)
 

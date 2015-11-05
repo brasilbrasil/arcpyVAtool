@@ -42,34 +42,34 @@ map_mrf_zone=False
 map_mig_zone_pt1=False
 calc_dist_fce_to_CCE=False
 calc_mean_elev_cce=False
-calc_mean_elev_fce=True
-count_cce_bioreg=True
-count_cce_bioreg_transition_areas=True
-calc_cce_precip_interannual_var=True
+calc_mean_elev_fce=False
+count_cce_bioreg=False
+count_cce_bioreg_transition_areas=False
+calc_cce_precip_interannual_var=False
 ##
-create_rep_zones=True
-calc_resp_zone_area=True
+create_rep_zones=False
+calc_resp_zone_area=False
 calc_zone_slr_area=True
-calc_zone_lava_flow_area=True
-calc_zone_hab_qual=True #this is breaking randomly
-calc_eff_hab_qual_nonpioneer=True
-calc_eff_hab_qual_pioneer=True
-chose_eff_hab_qual=True
+calc_zone_lava_flow_area=False
+calc_zone_hab_qual=False #this is breaking randomly
+calc_eff_hab_qual_nonpioneer=False
+calc_eff_hab_qual_pioneer=False
+chose_eff_hab_qual=False
 #create_eff_resp_zones=True
 #calc_eff_resp_zone_area=True #debug: why dying after species 549?
-calc_hab_qual=True
-calc_fragmentation=True
-calc_dist_to_top_of_island=True
-calc_protected_area=True
-calc_ung_free_area=True
-calc_zone_topo_complexity=True
+calc_hab_qual=False
+calc_fragmentation=False #died at sp 413!!!!!!!!!!!!!!!!!!
+calc_dist_to_top_of_island=False
+calc_protected_area=False
+calc_ung_free_area=False
+calc_zone_topo_complexity=False
 ##calc_slope_metrics=True
 ##calc_zone_aspect_mean=True
 ##calc_zone_cos_aspect=True
 ##calc_zone_sin_aspect=True
 ##calc_zone_aspect_std=True
-calc_ppt_gradient=True
-calc_zone_invasibility=True
+calc_ppt_gradient=False
+calc_zone_invasibility=False
 
 #START UNDERHOOD
 resultsdir0=r"%sresults/%s/" %(rootdir, island)
@@ -1372,6 +1372,8 @@ try:
 
                         if arcpy.Exists(opath2)==False or overwrite==1:
                             loc_min_elev_FCE_table=r"%sDBFs/min_elev_FCE_%s.dbf" %(resultsdir,sp_code_st)
+                            arcpy.env.scratchWorkspace = landscape_factor_dir #os.path.dirname(loc_min_elev_FCE_table)#resultsdir
+                            arcpy.env.workspace= landscape_factor_dir #os.path.dirname(loc_min_elev_FCE_table)#resultsdir
                             arcpy.sa.ZonalStatisticsAsTable(bioregions,"VALUE", FCE_DEM_temp, loc_min_elev_FCE_table)
                             print "done calculating FCE elev by bioreg"
 
@@ -1439,7 +1441,7 @@ try:
                     outname=r"%sDBFs/count_cce_bioreg%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
                     tmp_zn=range(0,18)
-                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+                    veg_area=zonal_area_from_dbf2(outname, tmp_zn)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1483,7 +1485,7 @@ try:
                     outname=r"%sDBFs/count_cce_bioreg_transition_areas%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
                     tmp_zn=range(0,18)
-                    veg_area=zonal_area_from_dbf2(outname, temp_zones)
+                    veg_area=zonal_area_from_dbf2(outname, tmp_zn)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1712,14 +1714,14 @@ try:
                     response_zones=arcpy.Raster(loc_response_zone)
                     slr_map_loc="%sall_island_1m_slr.tif" %(landscape_factor_dir)
                     slr_map=arcpy.Raster(slr_map_loc)
-                    slr_map=slr_map*response_zones
+                    slr_map2=slr_map*response_zones
 
-                    arcpy.BuildRasterAttributeTable_management(slr_map, "Overwrite")
-                    arcpy.CalculateStatistics_management(slr_map, "", "", "", "OVERWRITE")
-                    if not get_num_attributes(slr_map,"MEAN")==0: #arcpy.GetRasterProperties_management(slr_map, "MINIMUM")
+                    arcpy.BuildRasterAttributeTable_management(slr_map2, "Overwrite")
+                    arcpy.CalculateStatistics_management(slr_map2, "", "", "", "OVERWRITE")
+                    if not slr_map2.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
                         loc_slr=r"%sslr_%s.tif" %(resultsdir,sp_code_st)
-                        #slr_map.save(loc_slr)
-                        arcpy.CopyRaster_management(slr_map, loc_slr, "", "0", "0", "", "", "4_BIT", "", "")
+                        #slr_map2.save(loc_slr)
+                        arcpy.CopyRaster_management(slr_map2, loc_slr, "", "0", "0", "", "", "4_BIT", "", "")
                         loc_slr_table=r"%sDBFs/slr_%s.dbf" %(resultsdir,sp_code_st)
                         arcpy.sa.TabulateArea(response_zones,"VALUE", loc_slr, "VALUE", loc_slr_table)
                         #zones=[1,2,3]
@@ -1727,6 +1729,7 @@ try:
                         try:
                             #del db
                             del slr_map
+                            del slr_map2
                         except:
                             pass
                     else:
@@ -2788,12 +2791,12 @@ except arcpy.ExecuteError:
     arcpy.AddError(msgs) # Return tool error messages for use with a script tool
     print msgs # Print tool error messages for use in Python/PythonWin
 
-except socket.error as error:
-    if error.errno == errno.WSAECONNRESET:
-        reconnect()
-        retry_action()
-    else:
-        raise
+##except socket.error as error:
+##    if error.errno == errno.WSAECONNRESET:
+##        reconnect()
+##        retry_action()
+##    else:
+##        raise
 except:
     # Get the traceback object
     tb = sys.exc_info()[2]

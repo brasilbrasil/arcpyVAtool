@@ -4,7 +4,7 @@ source_dir="Y:/PICCC_data/VA data/CEs_KB/range maps/"
 wd="Y:/PICCC_data/VA data/CEs_KB/range maps bin/"
 dir.create(wd, showWarnings = F)
 setwd(wd)
-cpucores=30
+cpucores=20
 
 tif_file_nms=list.files(source_dir, pattern="\\.tif$", recursive=T)
 # tif_file_nm=tif_file_nms[2000]

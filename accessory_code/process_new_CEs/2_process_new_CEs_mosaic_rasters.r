@@ -5,7 +5,7 @@ source_dir="Y:/PICCC_data/VA data/CEs_KB/range maps bin extended/"
 wd="Y:/PICCC_data/VA data/CEs_KB/range maps archipelago/"
 dir.create(wd, showWarnings = F)
 setwd(wd)
-cpucores=30
+cpucores=20
 
 #mosaic rasters:
 dir_list=list.dirs(path = source_dir, full.names = F, recursive = TRUE)

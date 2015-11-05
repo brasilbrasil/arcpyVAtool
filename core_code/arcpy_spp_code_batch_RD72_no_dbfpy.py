@@ -4,13 +4,13 @@
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/testParallelRuns15/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
 ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files
 use_bio_region_filter=0 #
-subset_of_CEs=[3,10] #[3,60] [0,1084] 1084 leave empty [] for no subset, if subset: [300,400]
+subset_of_CEs=[0,1084] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
 import_cce_list=False #option to provide list of species names
 use_effective_CE_mask=True #remove non-habitat areas from habitat quality calculations
 use_zonal_stats=1 #SIMPLIFY
@@ -18,57 +18,57 @@ all_files_in_directory=1 #SIMPLIFY #1 to do batch processing of all files in a d
 reverse_spp_order=False
 keep_intermediary_output=0 #enter 1 for debug reasons, will a lot of intermediary analyses outputs for inspection
 #send_email_error_message=0
-overwrite=0
+overwrite=1
 sp_envelope_gap=0 #REMOVE?? #this will avoid the computationally intensive mapping of the transition zone if value is 0
 max_search_dist_for_transition_zone= 5000 #in m #only used if trying to interpolate areas between response zones. This parameter determines the distance
-parallel=True #for multiprocessing across species
+parallel=False #for multiprocessing across species
 
 #what pieces to run?
-pre_process_envelopes=True
-calculate_veg_type_areas_current=True
-calculate_veg_type_areas_BPS=True
-calculate_native_habitat_areas_HIGAP=True
-calculate_all_habitat_areas_HIGAP=True
-calculate_native_habitat_areas_LANDFIRE=True
-calculate_all_habitat_areas_LANDFIRE=True
-calculate_native_habitat_areas_BPS_LANDFIRE=True
-calculate_change_in_n_available_habitat=True
-calc_cce_total_area=True
-calc_fce_total_area=True
-calc_cce_fce_dif=True
-map_tol_zone=True
-map_mrf_zone=True
-map_mig_zone_pt1=True
-calc_dist_fce_to_CCE=True
-calc_mean_elev_cce=True
-calc_mean_elev_fce=True
-count_cce_bioreg=True
-count_cce_bioreg_transition_areas=True
-calc_cce_precip_interannual_var=True
+pre_process_envelopes=False
+calculate_veg_type_areas_current=False
+calculate_veg_type_areas_BPS=False
+calculate_native_habitat_areas_HIGAP=False
+calculate_all_habitat_areas_HIGAP=False
+calculate_native_habitat_areas_LANDFIRE=False
+calculate_all_habitat_areas_LANDFIRE=False
+calculate_native_habitat_areas_BPS_LANDFIRE=False
+calculate_change_in_n_available_habitat=False
+calc_cce_total_area=False
+calc_fce_total_area=False
+calc_cce_fce_dif=False
+map_tol_zone=False
+map_mrf_zone=False
+map_mig_zone_pt1=False
+calc_dist_fce_to_CCE=False
+calc_mean_elev_cce=False
+calc_mean_elev_fce=False #still crashing
+count_cce_bioreg=False
+count_cce_bioreg_transition_areas=False
+calc_cce_precip_interannual_var=False
 ##
-create_rep_zones=True
-calc_resp_zone_area=True
+create_rep_zones=False
+calc_resp_zone_area=False
 calc_zone_slr_area=True
-calc_zone_lava_flow_area=True
-calc_zone_hab_qual=True #this is breaking randomly
-calc_eff_hab_qual_nonpioneer=True
-calc_eff_hab_qual_pioneer=True
-chose_eff_hab_qual=True
+calc_zone_lava_flow_area=False
+calc_zone_hab_qual=False #this is breaking randomly
+calc_eff_hab_qual_nonpioneer=False
+calc_eff_hab_qual_pioneer=False
+chose_eff_hab_qual=False
 #create_eff_resp_zones=True
 #calc_eff_resp_zone_area=True #debug: why dying after species 549?
-calc_hab_qual=True
-calc_fragmentation=True
-calc_dist_to_top_of_island=True
-calc_protected_area=True
-calc_ung_free_area=True
-calc_zone_topo_complexity=True
+calc_hab_qual=False
+calc_fragmentation=False #died at sp 413!!!!!!!!!!!!!!!!!!
+calc_dist_to_top_of_island=False
+calc_protected_area=False
+calc_ung_free_area=False
+calc_zone_topo_complexity=False
 ##calc_slope_metrics=True
 ##calc_zone_aspect_mean=True
 ##calc_zone_cos_aspect=True
 ##calc_zone_sin_aspect=True
 ##calc_zone_aspect_std=True
-calc_ppt_gradient=True
-calc_zone_invasibility=True
+calc_ppt_gradient=False
+calc_zone_invasibility=False
 
 #START UNDERHOOD
 resultsdir0=r"%sresults/%s/" %(rootdir, island)
@@ -1373,17 +1373,24 @@ try:
                                 FCE_stdev_elev=0 #this is necessary if there is single pixel envelope
                             jnk=[FCE_mean_elev, FCE_min_elev, FCE_max_elev, FCE_stdev_elev]
                             save_temp_csv_data(jnk, opath)
+                            print "done calculating FCE mean elev"
 
                         if arcpy.Exists(opath2)==False or overwrite==1:
                             loc_min_elev_FCE_table=r"%sDBFs/min_elev_FCE_%s.dbf" %(resultsdir,sp_code_st)
+                            arcpy.env.scratchWorkspace = landscape_factor_dir #os.path.dirname(loc_min_elev_FCE_table)#resultsdir
+                            arcpy.env.workspace= landscape_factor_dir #os.path.dirname(loc_min_elev_FCE_table)#resultsdir
                             arcpy.sa.ZonalStatisticsAsTable(bioregions,"VALUE", FCE_DEM_temp, loc_min_elev_FCE_table)
+                            print "done calculating FCE elev by bioreg"
+
                             tmp_zn=range(0,18)
                             stat='MIN'
                             #min_elev_zone_vals=read_dbf_stat_vals(loc_min_elev_FCE_table, stat, tmp_zn) #
                             min_elev_zone_vals=zonal_area_from_dbf_byCol(loc_min_elev_FCE_table, tmp_zn, stat, multFactor=1)
+                            print "done extracting FCE min elev by bioreg"
                             stat='MAX'
                             #max_elev_zone_vals=read_dbf_stat_vals(loc_min_elev_FCE_table, stat, tmp_zn)
                             max_elev_zone_vals=zonal_area_from_dbf_byCol(loc_min_elev_FCE_table, tmp_zn, stat, multFactor=1)
+                            print "done extracting FCE max elev by bioreg"
 
                             if kio==0:
                                 try:
@@ -1391,6 +1398,7 @@ try:
                                     arcpy.Delete_management(FCE_DEM_temp)
                                 except:
                                     pass
+                            print "saving min and max bioreg FCE elev"
                             save_temp_csv_data(min_elev_zone_vals, opath1)
                             save_temp_csv_data(max_elev_zone_vals, opath2)
                     else:
@@ -1525,10 +1533,17 @@ try:
                 if arcpy.Exists(opath)==False or overwrite==1:
                     CCE_temp=arcpy.Raster(loc_COR_CCE)
                     CCE_DEM_temp=CCE_temp*arcpy.Raster(inRasterloc2)
-                    CCE_mean_elev=get_num_attributes(CCE_DEM_temp,"MEAN")
-                    CCE_min_elev=get_num_attributes(CCE_DEM_temp,"MINIMUM")
-                    CCE_max_elev=get_num_attributes(CCE_DEM_temp,"MAXIMUM")
-                    CCE_stdev_elev=get_num_attributes(CCE_DEM_temp,"STD")
+                    if CCE_DEM_temp.maximum>0:
+                        CCE_mean_elev=get_num_attributes(CCE_DEM_temp,"MEAN")
+                        CCE_min_elev=get_num_attributes(CCE_DEM_temp,"MINIMUM")
+                        CCE_max_elev=get_num_attributes(CCE_DEM_temp,"MAXIMUM")
+                        CCE_stdev_elev=get_num_attributes(CCE_DEM_temp,"STD")
+                    else:
+                        CCE_mean_elev=0
+                        CCE_min_elev=0
+                        CCE_max_elev=0
+                        CCE_stdev_elev=0
+
                     if kio==0:
                         try:
                             arcpy.Delete_management(CCE_DEM_temp)
@@ -1768,14 +1783,14 @@ try:
                     response_zones=arcpy.Raster(loc_response_zone)
                     slr_map_loc="%sall_island_1m_slr.tif" %(landscape_factor_dir)
                     slr_map=arcpy.Raster(slr_map_loc)
-                    slr_map=slr_map*response_zones
+                    slr_map2=slr_map*response_zones
 
-                    arcpy.BuildRasterAttributeTable_management(slr_map, "Overwrite")
-                    arcpy.CalculateStatistics_management(slr_map, "", "", "", "OVERWRITE")
-                    if not get_num_attributes(slr_map,"MEAN")==0: #arcpy.GetRasterProperties_management(slr_map, "MINIMUM")
+                    arcpy.BuildRasterAttributeTable_management(slr_map2, "Overwrite")
+                    arcpy.CalculateStatistics_management(slr_map2, "", "", "", "OVERWRITE")
+                    if slr_map2.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
                         loc_slr=r"%sslr_%s.tif" %(resultsdir,sp_code_st)
-                        #slr_map.save(loc_slr)
-                        arcpy.CopyRaster_management(slr_map, loc_slr, "", "0", "0", "", "", "4_BIT", "", "")
+                        #slr_map2.save(loc_slr)
+                        arcpy.CopyRaster_management(slr_map2, loc_slr, "", "0", "0", "", "", "4_BIT", "", "")
                         loc_slr_table=r"%sDBFs/slr_%s.dbf" %(resultsdir,sp_code_st)
                         arcpy.sa.TabulateArea(response_zones,"VALUE", loc_slr, "VALUE", loc_slr_table)
                         #zones=[1,2,3]
@@ -1783,6 +1798,7 @@ try:
                         try:
                             #del db
                             del slr_map
+                            del slr_map2
                         except:
                             pass
                     else:
@@ -2144,13 +2160,16 @@ try:
                     path_zone_frag=r"%sDBFs/zone_frag_%s.csv" %(resultsdir,sp_code_st)
                     if arcpy.Exists(path_zone_frag)==False or overwrite==1:
                         frag_map=frag_map*response_zones
-                        frag_map=arcpy.sa.SetNull(frag_map,1,"Value=0")
-                        loc_fragmentation=r"%sfragmentation_%s.tif" %(resultsdir,sp_code_st)
-                        frag_map.save(loc_fragmentation)
-                        loc_fragmentation_table=r"%sDBFs/fragmentation_%s.dbf" %(resultsdir,sp_code_st)
-                        arcpy.sa.TabulateArea(response_zones,"VALUE",loc_fragmentation, "VALUE",loc_fragmentation_table)
-                        #zones=[1,2,3]
-                        zone_fragmentation=zonal_area_from_dbf_byCol(loc_fragmentation_table, zones, 'VALUE_1')
+                        if frag_map.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
+                            frag_map=arcpy.sa.SetNull(frag_map,1,"Value=0")
+                            loc_fragmentation=r"%sfragmentation_%s.tif" %(resultsdir,sp_code_st)
+                            frag_map.save(loc_fragmentation)
+                            loc_fragmentation_table=r"%sDBFs/fragmentation_%s.dbf" %(resultsdir,sp_code_st)
+                            arcpy.sa.TabulateArea(response_zones,"VALUE",loc_fragmentation, "VALUE",loc_fragmentation_table)
+                            #zones=[1,2,3]
+                            zone_fragmentation=zonal_area_from_dbf_byCol(loc_fragmentation_table, zones, 'VALUE_1')
+                        else:
+                            zone_fragmentation=[0, 0, 0]
                         save_temp_csv_data(zone_fragmentation, path_zone_frag)
                     else:
                         zone_fragmentation=load_temp_csv_float_data(path_zone_frag)
@@ -2160,14 +2179,17 @@ try:
                     path_zone_core=r"%sDBFs/zone_core_%s.csv" %(resultsdir,sp_code_st)
                     if arcpy.Exists(path_zone_core)==False or overwrite==1:
                         core_biome_map=core_biome_map*response_zones
-                        core_biome_map=arcpy.sa.SetNull(core_biome_map,1,"Value=0")
-                        loc_core_biome=r"%score_biome_%s.tif" %(resultsdir,sp_code_st)
-                        core_biome_map.save(loc_core_biome)
-                        loc_core_biome_table=r"%sDBFs/core_biome_%s.dbf" %(resultsdir,sp_code_st)
-                        #arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", loc_core_biome, loc_core_biome_table,"DATA")
-                        arcpy.sa.TabulateArea(response_zones,"VALUE",loc_core_biome, "VALUE",loc_core_biome_table)
-                        #zones=[1,2,3]
-                        zone_core_biome=zonal_area_from_dbf_byCol(loc_core_biome_table, zones, 'VALUE_1')
+                        if core_biome_map.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
+                            core_biome_map=arcpy.sa.SetNull(core_biome_map,1,"Value=0")
+                            loc_core_biome=r"%score_biome_%s.tif" %(resultsdir,sp_code_st)
+                            core_biome_map.save(loc_core_biome)
+                            loc_core_biome_table=r"%sDBFs/core_biome_%s.dbf" %(resultsdir,sp_code_st)
+                            #arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", loc_core_biome, loc_core_biome_table,"DATA")
+                            arcpy.sa.TabulateArea(response_zones,"VALUE",loc_core_biome, "VALUE",loc_core_biome_table)
+                            #zones=[1,2,3]
+                            zone_core_biome=zonal_area_from_dbf_byCol(loc_core_biome_table, zones, 'VALUE_1')
+                        else:
+                            zone_core_biome=[0,0,0]
                         save_temp_csv_data(zone_core_biome, path_zone_core)
                     else:
                         zone_core_biome=load_temp_csv_float_data(path_zone_core)
@@ -2844,12 +2866,12 @@ except arcpy.ExecuteError:
     arcpy.AddError(msgs) # Return tool error messages for use with a script tool
     print msgs # Print tool error messages for use in Python/PythonWin
 
-except socket.error as error: #http://stackoverflow.com/questions/18832643/how-to-catch-this-python-exception-error-errno-10054-an-existing-connection
-    if error.errno == errno.WSAECONNRESET:
-        reconnect()
-        retry_action()
-    else:
-        raise
+##except socket.error as error: #http://stackoverflow.com/questions/18832643/how-to-catch-this-python-exception-error-errno-10054-an-existing-connection
+##    if error.errno == errno.WSAECONNRESET:
+##        reconnect()
+##        retry_action()
+##    else:
+##        raise
 except:
     # Get the traceback object
     tb = sys.exc_info()[2]

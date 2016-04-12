@@ -1,7 +1,7 @@
 rm(list = ls()) #remove all past worksheet variables
 library(raster)
-source_dir="Y:/PICCC_data/VA data/CEs_KB/range maps/"
-wd="Y:/PICCC_data/VA data/CEs_KB/range maps bin/"
+source_dir="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/raw_CEs/" #DD A1B HRCM v2 CEs // SD RCP45 CEs // SD RCP85 CEs
+wd="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps bin/"
 dir.create(wd, showWarnings = F)
 setwd(wd)
 cpucores=20

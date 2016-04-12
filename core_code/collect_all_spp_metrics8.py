@@ -1,6 +1,6 @@
 #USER INPUT
 #datadir=r"Y:/Py_code/test/results/all/"
-datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/results/all/"
+datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_DDA1B/results/all/"
 sp_temps=range(1,1115) #range(1,1115)
 bioreg_subset=0
 use_effective_CE_mask=True
@@ -31,7 +31,8 @@ import fnmatch
 CSV_files=fnmatch.filter(dirList, '*values.csv')
 
 Spp_data=[]
-Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 'prop_area_change', 'winkout', 'CE_overlap', 'FCE_distance', 'CCE_mean_elev', 'CCE_min_elev', 'CCE_max_elev', 'CCE_stdev_elev',
+Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 'prop_area_change',
+    'winkout', 'CE_overlap', 'FCE_distance', 'CCE_mean_elev', 'CCE_min_elev', 'CCE_max_elev', 'CCE_stdev_elev',
     'FCE_mean_elev', 'FCE_min_elev', 'FCE_max_elev', 'FCE_stdev_elev',
     'FCE_min_elev_E_Ma', 'FCE_min_elev_E_Mo', 'FCE_min_elev_Hualalai', 'FCE_min_elev_Ko', 'FCE_min_elev_Kau', 'FCE_min_elev_Ka', 'FCE_min_elev_Kilauea', 'FCE_min_elev_Kohala',
     'FCE_min_elev_Kona', 'FCE_min_elev_Koolau', 'FCE_min_elev_La', 'FCE_min_elev_Maunakea', 'FCE_min_elev_NE_Maunaloa', 'FCE_min_elev_Ni', 'FCE_min_elev_NW_Maunaloa', 'FCE_min_elev_Waianae',
@@ -43,8 +44,10 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'Biome_max_elev_Kona', 'Biome_max_elev_Koolau', 'Biome_max_elev_La', 'Biome_max_elev_Maunakea', 'Biome_max_elev_NE_Maunaloa', 'Biome_max_elev_Ni', 'Biome_max_elev_NW_Maunaloa', 'Biome_max_elev_Waianae',
     'Biome_max_elev_W_Ma', 'Biome_max_elev_W_Mo',
     'Biome_index', 'n_bioreg_in_FCE', 'n_bioreg_near_top', 'prop_bioreg_near_top',
-    'Other', 'Alpine_shrubland', 'Mixed_cliff_habitat', 'Dry_forest', 'Dry_grassland', 'Dry_shrubland', 'Coastal_strand', 'Mesic_forest', 'Mesic_grassland', 'Mesic_shrubland',
-    'Bog', 'Wet_forest', 'Wetlands_and_marshes', 'Barren', 'Mixed_introduced',
+    'LF_current_Other', 'LF_current_Alpine_shrubland', 'LF_current_Mixed_cliff_habitat',
+    'LF_current_Dry_forest', 'LF_current_Dry_grassland', 'LF_current_Dry_shrubland', 'LF_current_Coastal_strand',
+    'LF_current_Mesic_forest', 'LF_current_Mesic_grassland', 'LF_current_Mesic_shrubland',
+    'LF_current_Bog', 'LF_current_Wet_forest', 'LF_current_Wetlands_and_marshes', 'LF_current_Barren', 'LF_current_Mixed_introduced',
     'BPS_Other', 'BPS_Alpine_shrubland', 'BPS_Mixed_cliff_habitat', 'BPS_Dry_forest', 'BPS_Dry_grassland', 'BPS_Dry_shrubland', 'BPS_Coastal_strand',
     'BPS_Mesic_forest', 'BPS_Mesic_grassland', 'BPS_Mesic_shrubland', 'BPS_Bog', 'BPS_Wet_forest',
     'BPS_Wetlands_and_marshes', 'BPS_Barren', 'BPS_Mixed_introduced',
@@ -59,7 +62,7 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'BPS_native_Forest', 'BPS_native_Shrubland', 'BPS_native_Grassland', 'BPS_native_Bog',
     'BPS_native_Cliff', 'BPS_native_Coastal', 'BPS_native_Wetland',
     'n_habitats_BPS', 'n_habitats_landfire_native', 'n_habitats_landfire_all',
-    'n_habitats_HIGAP_native', 'n_habitats_HIGAP_all',
+    'n_habitats_HIGAP_native', 'n_habitats_HIGAP_all', 'Current_n_veg_zones',
     'E_Maui_area', 'E_Molokai_area', 'Hualalai_area', 'Kahoolawe_area', 'Kau_area',
     'Kauai_area', 'Kilauea_area', 'Kohala_area', 'Kona_area', 'Koolau_area', 'Lanai_area',
     'Mauna_Kea_area', 'NE_Mauna_Loa_area', 'Niihau_area', 'NW_Mauna_Loa_area',
@@ -67,10 +70,13 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'Kau_Kilauea', 'Hualalai_Kona', 'Kona_Kau', 'Mauna_Kea_Kohala', 'NE_Mauna_Loa_Kau',
     'NE_Mauna_Loa_Kilauea', 'NE_Mauna_Loa_Mauna_Kea', 'Hualalai_NW_Mauna_Loa',
     'Kona_NW_Mauna_Loa', 'NW_Mauna_Loa_Mauna_Kea', 'NW_Mauna_Loa_NE_Mauna_Loa',
-    'Waianae_Koolau', 'E_Maui_W_Maui', 'E_Molokai_W_Molokai', 'n_bioreg_trans_in_CCE',
+    'Waianae_Koolau', 'E_Maui_W_Maui', 'E_Molokai_W_Molokai',
+    'n_bioreg_trans_in_CCE',
     'CCE_mean_precip_CV', 'CCE_min_precip_CV', 'CCE_max_precip_CV', 'CCE_stdev_precip_CV',
-    'zone_area__MR', 'zone_area___TL', 'zone_area__MG', 'eff_zone_area__MR', 'eff_zone_area__TL', 'eff_zone_area__MG',
-    'eff_pioneer_zone_area__MR', 'eff_pioneer_zone_area__TL', 'eff_pioneer_zone_area__MG', 'eff_hab_qual_area__MR', 'eff_hab_qual_area__TL', 'eff_hab_qual_area__MG',
+    'total_zone_area__MR', 'total_zone_area___TL', 'total_zone_area__MG',
+    'eff_nonpioneer_zone_area__MR', 'eff_nonpioneer_zone_area__TL', 'eff_nonpioneer_zone_area__MG',
+    'eff_pioneer_zone_area__MR', 'eff_pioneer_zone_area__TL', 'eff_pioneer_zone_area__MG',
+    'eff_hab_qual_area__MR', 'eff_hab_qual_area__TL', 'eff_hab_qual_area__MG',
 #    'zone_habitat_area__MR', 'zone_habitat_area__TL', 'zone_habitat_area__MG',
     'Sp_pioneer_status', 'zone_lavaflow_area__MR', 'zone_lavaflow_area__TL', 'zone_lavaflow_area__MG',
     'ugly__MR', 'ugly__TL', 'ugly__MG', 'bad__MR', 'bad__TL', 'bad__MG', 'good__MR', 'good__TL', 'good__MG',
@@ -80,18 +86,18 @@ Sp_data=['sp_name', 'sp_code', 'sqkm_area_CCE', 'sqkm_area_FCE', 'area_change', 
     'zone_slr__MR', 'zone_slr__TL', 'zone_slr__MG', 'mean_ppt_gradient__MR', 'mean_ppt_gradient__TL', 'mean_ppt_gradient__MG',
     'mean_inv_suitability__MR', 'mean_inv_suitability__TL', 'mean_inv_suitability__MG',
     'Topo_complexity__MR', 'Topo_complexity__TL', 'Topo_complexity__MG',
-#    'Zone_slope_medMR', 'Zone_slope_medTL', 'Zone_slope_medMG',
+    'Zone_slope_med__MR', 'Zone_slope_med__TL', 'Zone_slope_med__MG',
 #    'Zone_slope_minMR', 'Zone_slope_minTL', 'Zone_slope_minMG', 'Zone_slope_maxMR', 'Zone_slope_maxTL', 'Zone_slope_maxMG',
 #    'Zone_slope_stdMR', 'Zone_slope_stdTL', 'Zone_slope_stdMG',
 #    'Zone_slope_cvMR', 'Zone_slope_cvTL', 'Zone_slope_cvMG', 'zone_aspect_meanMR', 'zone_aspect_meanTL', 'zone_aspect_meanMG',
 #    'zone_aspect_stdMR', 'zone_aspect_stdTL', 'zone_aspect_stdMG',
-    'total_CO_points', 'total_zone_pts', 'pct CO in MR', 'pct_CO_in__TL', 'pct CO in MG',
+    'total_CO_points', 'total_zone_pts', 'pct_CO__MR', 'pct_CO__TL', 'pct_CO__MG',
     'pts in alp', 'pts in nat pioneer', 'pts in low dry', 'pts in mont dry', 'pts in subalpine',
     'pts in low mes', 'pts in mont mes', 'pts in low wet',
-    'pts in mont wet', 'lavaflows MR pts', 'lavaflows TL pts', 'lavaflows MG pts', 'ung_free MR pts', 'ung_free TL pts', 'ung_free MG pts',
+    'pts in mont wet', 'lavaflows MR pts', 'lavaflows TL pts', 'lavaflows MG pts', 'ung_free_pts__MR', 'ung_free_pts__TL', 'ung_free_pts__MG',
     'protected MR pts', 'protected TL pts', 'protected MG pts','Total_zone_edge_biome', 'Total_zone_core_biome', 'Total_zone_slr', 'Total_zone_lava_flows',
     'Total_Zone_ugly_hab', 'Total_Zone_bad_hab', 'Total_Zone_good_hab', 'Total_zone_protected_area',
-    'Total_Zones_ungfree', 'Total_zone_topo_complexity',
+    'Total_Zones_ungfree', 'Total_zone_topo_complexity', 'Total_zone_slope_median',
     'Total_zone_mean_ppt_gradient', 'Total_zone_mean_inv_suitability',
     'Total_zone_fragmentation'] #'pts in NA veg',  #'MRzone_biome', 'TLzone_biome', 'MGzone_biome',
 Spp_data.append(Sp_data)
@@ -307,6 +313,23 @@ for sp_code_st in del_terms:
     except:
         veg_area_BPS=['NA']*len(range(50,65))
 
+    #SP pioneer status
+    try:
+        Sp_index=hab_sp_code.index(str(sp_code))
+        Sp_pioneer_status=spp_pioneer_data[Sp_index]
+    except:
+        Sp_index='NA'
+        Sp_pioneer_status='NA'
+
+    #SP alien habitat compatibility
+    try:
+        Sp_index=hab_sp_code.index(str(sp_code))
+        Sp_alien_hab_comp=spp_alien_hab_compatibility[Sp_index]
+    except:
+        Sp_index='NA'
+        Sp_alien_hab_comp='NA'
+
+
     #CCE HABITAT VALUES
     try:
         opath="%sDBFs/all_habitat_areas_HIGAP%s.csv" %(resultsdir,sp_code_st)
@@ -343,6 +366,15 @@ for sp_code_st in del_terms:
         change_in_n_available_habitat=load_temp_csv_float_data(opath)
     except:
         change_in_n_available_habitat=['NA']*5
+
+    try:
+        if Sp_alien_hab_comp==1:
+            Current_n_veg_zones=change_in_n_available_habitat[4]
+        else:
+            Current_n_veg_zones=change_in_n_available_habitat[3]
+
+    except:
+        Current_n_veg_zones=['NA']
 
     #NEW PLASTICITY METRICS
     try:
@@ -421,13 +453,6 @@ for sp_code_st in del_terms:
 
     #FRAGMENTATION
     try:
-        Sp_index=hab_sp_code.index(str(sp_code))
-        Sp_alien_hab_comp=spp_alien_hab_compatibility[Sp_index]
-    except:
-        Sp_index='NA'
-        Sp_alien_hab_comp='NA'
-
-    try:
         opath=r"%sDBFs/%s_zone_fragmentation.csv" %(resultsdir, sp_code_st)
         jnk=load_temp_csv_data(opath)
         biome_index= jnk[0]
@@ -476,24 +501,17 @@ for sp_code_st in del_terms:
         opath=r"%sDBFs/%s_zone_slr.csv" %(resultsdir, sp_code_st)
         zone_slr= load_temp_csv_float_data(opath)
         zone_slr=[numpy.float64(i)/j for i, j in zip(zone_slr,total_zone_area)]
-        Total_zone_slr=sum(multpl(i,j) for i, j in zip(zone_slr,total_zone_area_weights))
+        Total_zone_slr=sum(i*j for i, j in zip(zone_slr,total_zone_area_weights))
     except:
         Total_zone_slr='NA'
         zone_slr=['NA']*3
 
     #CALCULATE habitat area within young lava flows
     try:
-        Sp_index=hab_sp_code.index(str(sp_code))
-        Sp_pioneer_status=spp_pioneer_data[Sp_index]
-    except:
-        Sp_index='NA'
-        Sp_pioneer_status='NA'
-
-    try:
         opath=r"%sDBFs/%s_zone_lava_flows.csv" %(resultsdir, sp_code_st)
         zone_lava_flows= load_temp_csv_float_data(opath)
         zone_lava_flows=[numpy.float64(i)/j for i, j in zip(zone_lava_flows,total_zone_area)]
-        Total_zone_lava_flows=sum(multpl(i,j) for i, j in zip(zone_lava_flows,total_zone_area_weights))
+        Total_zone_lava_flows=sum(i*j for i, j in zip(zone_lava_flows,total_zone_area_weights))
     except:
         zone_lava_flows=['NA']*3
         Total_zone_lava_flows='NA'
@@ -578,35 +596,35 @@ for sp_code_st in del_terms:
         zone_topo_complexity= ['NA']*3
         Total_zone_topo_complexity='NA'
 
-##    #CALC SLOPE QUANTILES
-##    try:
-##        opath=r"%sDBFs/%s_Zone_slope_max.csv" %(resultsdir, sp_code_st)
-##        opath2=r"%sDBFs/%s_Zone_slope_min.csv" %(resultsdir, sp_code_st)
-##        opath3=r"%sDBFs/%s_Zone_slope_std.csv" %(resultsdir, sp_code_st)
-##        opath4=r"%sDBFs/%s_Zone_slope_median.csv" %(resultsdir, sp_code_st)
-##
-##        Zone_slope_median= load_temp_csv_float_data(opath4)
-##        Zone_slope_std= load_temp_csv_float_data(opath3)
-##        Zone_slope_min= load_temp_csv_float_data(opath2)
-##        Zone_slope_max= load_temp_csv_float_data(opath)
-##        Zone_slope_cv=[numpy.float64(i)/j for i, j in zip(Zone_slope_std,Zone_slope_median)]
-##        Total_Zone_slope_median=sum(multpl(i,j) for i, j in zip(Zone_slope_median,zone_area_weights))
-##        Total_Zone_slope_std=sum(multpl(i,j) for i, j in zip(Zone_slope_std,zone_area_weights))
-##        Total_Zone_slope_min=sum(multpl(i,j) for i, j in zip(Zone_slope_min,zone_area_weights))
-##        Total_Zone_slope_max=sum(multpl(i,j) for i, j in zip(Zone_slope_max,zone_area_weights))
-##        Total_Zone_slope_cv=sum(multpl(i,j) for i, j in zip(Zone_slope_cv,zone_area_weights))
-##
-##    except:
-##        Zone_slope_median= ['NA']*3
-##        Zone_slope_std= ['NA']*3
-##        Zone_slope_min= ['NA']*3
-##        Zone_slope_max= ['NA']*3
-##        Zone_slope_cv= ['NA']*3
-##        Total_Zone_slope_median='NA'
-##        Total_Zone_slope_std='NA'
-##        Total_Zone_slope_min='NA'
-##        Total_Zone_slope_max='NA'
-##        Total_Zone_slope_cv='NA'
+    #CALC SLOPE QUANTILES
+    try:
+        #opath=r"%sDBFs/%s_Zone_slope_max.csv" %(resultsdir, sp_code_st)
+        #opath2=r"%sDBFs/%s_Zone_slope_min.csv" %(resultsdir, sp_code_st)
+        #opath3=r"%sDBFs/%s_Zone_slope_std.csv" %(resultsdir, sp_code_st)
+        opath4=r"%sDBFs/%s_Zone_slope_median.csv" %(resultsdir, sp_code_st)
+
+        Zone_slope_median= load_temp_csv_float_data(opath4)
+        #Zone_slope_std= load_temp_csv_float_data(opath3)
+        #Zone_slope_min= load_temp_csv_float_data(opath2)
+        #Zone_slope_max= load_temp_csv_float_data(opath)
+        #Zone_slope_cv=[numpy.float64(i)/j for i, j in zip(Zone_slope_std,Zone_slope_median)]
+        Total_Zone_slope_median=sum(multpl(i,j) for i, j in zip(Zone_slope_median,zone_area_weights))
+        #Total_Zone_slope_std=sum(multpl(i,j) for i, j in zip(Zone_slope_std,zone_area_weights))
+        #Total_Zone_slope_min=sum(multpl(i,j) for i, j in zip(Zone_slope_min,zone_area_weights))
+        #Total_Zone_slope_max=sum(multpl(i,j) for i, j in zip(Zone_slope_max,zone_area_weights))
+        #Total_Zone_slope_cv=sum(multpl(i,j) for i, j in zip(Zone_slope_cv,zone_area_weights))
+
+    except:
+        Zone_slope_median= ['NA']*3
+        #Zone_slope_std= ['NA']*3
+        #Zone_slope_min= ['NA']*3
+        #Zone_slope_max= ['NA']*3
+        #Zone_slope_cv= ['NA']*3
+        Total_Zone_slope_median='NA'
+        #Total_Zone_slope_std='NA'
+        #Total_Zone_slope_min='NA'
+        #Total_Zone_slope_max='NA'
+        #Total_Zone_slope_cv='NA'
 ##
 ##    #CALC CCE ASPECT MEAN, STDE
 ##    try:
@@ -720,6 +738,7 @@ for sp_code_st in del_terms:
     Sp_data.extend(native_habitat_areas_LANDFIRE)
     Sp_data.extend(native_habitat_areas_BPS_LANDFIRE)
     Sp_data.extend(change_in_n_available_habitat)
+    Sp_data.extend([Current_n_veg_zones])
     Sp_data.extend(count_cce_bioreg)
     Sp_data.extend(count_cce_bioreg_transition_areas)
     Sp_data.extend(cce_precip_interannual_var)
@@ -744,7 +763,7 @@ for sp_code_st in del_terms:
     Sp_data.extend(zone_mean_ppt_gradient)
     Sp_data.extend(zone_mean_inv_suitability)
     Sp_data.extend(zone_topo_complexity)
-##    Sp_data.append(Zone_slope_median)
+    Sp_data.extend(Zone_slope_median)
 ##    Sp_data.append(Zone_slope_min)
 ##    Sp_data.append(Zone_slope_max)
 ##    Sp_data.append(Zone_slope_std)
@@ -770,7 +789,7 @@ for sp_code_st in del_terms:
     Sp_data.append(Total_zone_protected_area)
     Sp_data.append(Total_Zones_ungfree)
     Sp_data.append(Total_zone_topo_complexity)
-##    Sp_data.append([Total_Zone_slope_median])
+    Sp_data.extend([Total_Zone_slope_median])
 ##    Sp_data.append([Total_Zone_slope_std])
 ##    Sp_data.append([Total_Zone_slope_min])
 ##    Sp_data.append([Total_Zone_slope_max])

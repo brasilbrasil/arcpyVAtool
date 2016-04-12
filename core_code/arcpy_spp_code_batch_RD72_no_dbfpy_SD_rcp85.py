@@ -1,18 +1,18 @@
 #disable background processing (arcgis geoprocessing options) as it does not work well- python will call variables for routines that are not yet complete from previous routine!!
-#python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpy.py
+#python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpy_SD_rcp85.py
 #if running parallel, must run this from cmd with script above, python must be on system path
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_JP_CEs/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_SD_rcp85/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 #rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
-ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
+ce_data_dir=r"Y:/PICCC_data/VA data/SD RCP85 CEs/range maps archipelago reprojected 2bits/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
 #ce_data_dir=r"Y:/PICCC_data/VA data/CEs_KB/range maps archipelago/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
 use_bio_region_filter=0 #
-subset_of_CEs=[0,1084] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
+subset_of_CEs=[0,969] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
 import_cce_list=False #option to provide list of species names
 use_effective_CE_mask=True #remove non-habitat areas from habitat quality calculations
 use_zonal_stats=1 #SIMPLIFY
@@ -43,27 +43,27 @@ map_mrf_zone=False
 map_mig_zone_pt1=False
 calc_dist_fce_to_CCE=False
 calc_mean_elev_cce=False
-calc_mean_elev_fce=False #still crashing
-count_cce_bioreg=False
-count_cce_bioreg_transition_areas=False
-calc_cce_precip_interannual_var=False
+calc_mean_elev_fce=True #still crashing
+count_cce_bioreg=True
+count_cce_bioreg_transition_areas=True
+calc_cce_precip_interannual_var=True
 ##
-create_rep_zones=False
-calc_resp_zone_area=False
-calc_zone_slr_area=False
-calc_zone_lava_flow_area=False
-calc_zone_hab_qual=False #this is breaking randomly
-calc_eff_hab_qual_nonpioneer=False
-calc_eff_hab_qual_pioneer=False
-chose_eff_hab_qual=False
+create_rep_zones=True
+calc_resp_zone_area=True
+calc_zone_slr_area=True
+calc_zone_lava_flow_area=True
+calc_zone_hab_qual=True #this is breaking randomly
+calc_eff_hab_qual_nonpioneer=True
+calc_eff_hab_qual_pioneer=True
+chose_eff_hab_qual=True
 #create_eff_resp_zones=True
 #calc_eff_resp_zone_area=True #debug: why dying after species 549?
-calc_hab_qual=False
-calc_fragmentation=False #died at sp 413!!!!!!!!!!!!!!!!!!
-calc_dist_to_top_of_island=False
-calc_protected_area=False
-calc_ung_free_area=False
-calc_slope_metrics=False
+calc_hab_qual=True
+calc_fragmentation=True #died at sp 413!!!!!!!!!!!!!!!!!!
+calc_dist_to_top_of_island=True
+calc_protected_area=True
+calc_ung_free_area=True
+calc_slope_metrics=True
 ##calc_zone_aspect_mean=True
 ##calc_zone_cos_aspect=True
 ##calc_zone_sin_aspect=True
@@ -495,7 +495,7 @@ try:
                         #MAP- SIMPLIFY CCE/CAO RASTER TO SINGLE CLASS
                         inRaster = ce_data_dir + CCE_Spp[i]
                         inRaster=arcpy.Raster(inRaster)
-                        if get_num_attributes(inRaster, "UNIQUEVALUECOUNT")==1 and get_num_attributes(inRaster, "MAXIMUM")==1:
+                        if get_num_attributes(inRaster, "MINIMUM")==1 and get_num_attributes(inRaster, "MAXIMUM")==1:
                             CCE_full=inRaster
                         else:
                             CCE_full=arcpy.sa.SetNull(inRaster,1,"Value <1")
@@ -505,10 +505,13 @@ try:
 
                         inRaster = ce_data_dir + FCE_Spp[i]
                         inRaster=arcpy.Raster(inRaster)
-                        if get_num_attributes(inRaster, "UNIQUEVALUECOUNT")==1 and get_num_attributes(inRaster, "MAXIMUM")==1:
-                            FCE_full=inRaster
+                        if inRaster.maximum!=None:
+                            if get_num_attributes(inRaster, "MINIMUM")==1 and get_num_attributes(inRaster, "MAXIMUM")==1:
+                                FCE_full=inRaster
+                            else:
+                                FCE_full=arcpy.sa.SetNull(inRaster,1,"Value <1")
                         else:
-                            FCE_full=arcpy.sa.SetNull(inRaster,1,"Value <1")
+                            FCE_full=inRaster
                         #FCE_full=arcpy.sa.SetNull(inRaster,1,"Value <1")
                         loc_simple_FCE=r"%ssimplified_FCE_%s.tif" %(resultsdir,sp_code_st)
                         #FCE_full.save(loc_simple_FCE)
@@ -518,7 +521,7 @@ try:
                         inRaster = ce_data_dir + CCE_Spp[i]
                         inRaster=arcpy.Raster(inRaster)
                         CCE_full= inRaster*island_mask
-                        if (get_num_attributes(inRaster, "UNIQUEVALUECOUNT")==1 and get_num_attributes(inRaster, "MAXIMUM")==1)==False:
+                        if (get_num_attributes(inRaster, "MINIMUM")==1 and get_num_attributes(inRaster, "MAXIMUM")==1)==False:
                             CCE_full=arcpy.sa.SetNull(CCE_full,1,"Value <1")
                         loc_simple_CCE=r"%ssimplified_CCE_%s.tif" %(resultsdir,sp_code_st)
                         if arcpy.Exists(loc_simple_CCE)==False or overwrite==1:
@@ -530,7 +533,7 @@ try:
                         island_mask="%s%s/DEM/%s_extent.tif" %(landscape_factor_dir, island, island)
                         island_mask=arcpy.Raster(island_mask)
                         FCE_full= inRaster*island_mask
-                        if (get_num_attributes(inRaster, "UNIQUEVALUECOUNT")==1 and get_num_attributes(inRaster, "MAXIMUM")==1)==False:
+                        if (get_num_attributes(inRaster, "MINIMUM")==1 and get_num_attributes(inRaster, "MAXIMUM")==1)==False:
                             FCE_full=arcpy.sa.SetNull(FCE_full,1,"Value <1")
                         loc_simple_FCE=r"%ssimplified_FCE_%s.tif" %(resultsdir,sp_code_st)
                         if arcpy.Exists(loc_simple_FCE)==False or overwrite==1:

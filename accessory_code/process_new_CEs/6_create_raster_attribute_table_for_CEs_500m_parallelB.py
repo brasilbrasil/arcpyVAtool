@@ -1,8 +1,8 @@
-#python D:\Dropbox\code\arcpyVAtool\pre_analysis_data_process\create_raster_attribute_table_for_CEs_500m_parallel.py
+#python D:\Dropbox\code\arcpyVAtool\accessory_code\process_new_CEs\6_create_raster_attribute_table_for_CEs_500m_parallelB.py
 #must run this from cmd with script above, python must be on system path
 
 #USER INPUT
-rootdir=r"Y:/PICCC_data/VA data/CEs_KB/range maps archipelago/" #"Y:/PICCC_data/VA data/CEs_500m/"
+rootdir=r"Y:/PICCC_data/VA data/SD RCP85 CEs/range maps archipelago reprojected 2bits/" #"Y:/PICCC_data/VA data/CEs_500m/"
 overwrite=False
 
 #END USER INPUT

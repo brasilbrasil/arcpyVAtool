@@ -1,0 +1,144 @@
+---
+title: 'VA metric: calculate current_habitat_types'
+author: "Lucas Fortini"
+date: "Friday, August 07, 2015"
+output: html_document
+---
+Script directory: 
+D:/Dropbox/code/arcpyVAtool/pre_analysis_data_process/current_habitat_types_data_processing
+Data directory:
+
+
+This is an R Markdown <http://rmarkdown.rstudio.com>. The **Knit** button will generate a document that includes both content as well as the output of any embedded R code.
+
+The purpose of this file is to document the processing of the revised higap data to generate geospatial maps to tabulate the amount of areas within species current climate envelopew that fall within broad native and non-native dominated vegetation classes.
+
+The first step in the process is to copy the revised higap data from the biome data analysis folder into the plant VA data folder, along with the table that includes class categories. To do this, we use the script below.
+I placed the csv file that specifies which files to copy in the Data directory, along with the moving script in the Script directory.
+
+```{r}
+#wd="D:/Dropbox/code/arcpyVAtool/pre_analysis_data_process/current_habitat_types_data_processing/"
+wd="Y:/PICCC_data/VA data/landscape/revisedHIGAP/"
+setwd(wd)
+system("python D:/Dropbox/code/arcpyVAtool/pre_analysis_data_process/current_habitat_types_data_processing/move_and_rename_files_from_list_script_with_records.py")
+
+
+```
+
+Next step I downgrade the resolution of the revised higap map using the script below that utilizes a 500m climate raster as a template:
+
+```{r}
+library(raster)
+clim_data_dir="Y:/PICCC_data/climate_data/bioclim_data_Aug2013/complete_rasters/allYrs_avg/bioclims_abs/all_baseline/500m/" #this is the root directory of all the current env rasters
+biovars2000 = raster(paste(clim_data_dir, "bio1.tif", sep=""))
+veg_map=raster("HiGAP_Revised.tif")
+
+#first must reproject raster
+veg_map_reproj=projectRaster(from=veg_map, crs=crs(biovars2000), method="ngb") 
+high_res_raster_proj_res=res(veg_map_reproj)[1]
+low_res_raster_proj_res=res(biovars2000)[1]
+res_ratio=round(low_res_raster_proj_res/high_res_raster_proj_res)
+veg_map_aggregate=aggregate(veg_map_reproj, res_ratio, fun=modal, expand=TRUE)
+veg_map_aggregate=resample(veg_map_aggregate, biovars2000, method='ngb')
+writeRaster(veg_map_aggregate, "revised_HIGAP_500m.tif", format="GTiff", overwrite=TRUE)
+```
+Next step is to reclass the aggregated revised HIGAP map into maps based on native/ non native broad
+vegetation categories. The native/ non native is important as some species only can inhabit native
+dominated areas.
+Created a simplified class system included in 'class_names.csv'. Used these to create simplified maps
+using HIGAP, current and BPS landfire:
+
+
+First start with HIGAP map
+```{r}
+veg_map_aggregate=raster("revised_HIGAP_500m.tif")
+reclass_table=(read.csv('HIGAP Revised - Land Cover Classes FINAL for TABLES.csv',header=T, stringsAsFactors=F))
+#create a map for native generalized vegetation classes
+reclass_table=reclass_table[,c("Value", "veg_type_code_native")]
+landfire_reclass=subs(veg_map_aggregate,  reclass_table)
+writeRaster(landfire_reclass, "HIGAP_revised_simple_native_veg.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
+
+#create a A map for generalized (native and non-native) vegetation classes
+reclass_table=(read.csv('HIGAP Revised - Land Cover Classes FINAL for TABLES.csv',header=T, stringsAsFactors=F))
+reclass_table=reclass_table[,c("Value", "veg_type_code_all")]
+landfire_reclass=subs(veg_map_aggregate,  reclass_table)
+writeRaster(landfire_reclass, "HIGAP_revised_simple_native_and_alien_veg.tif", format="GTiff", overwrite=TRUE, datatype='INT1U') #note that we must save rasters not in float format to avoid arcgis errors, hence the INT1U format
+```
+
+Now we will do the same steps with the current landfire veg map
+```{r}
+#first must reproject raster
+veg_map=raster("landfire_veg_cover.tif")
+veg_map_reproj=projectRaster(from=veg_map, crs=crs(biovars2000), method="ngb") 
+high_res_raster_proj_res=res(veg_map_reproj)[1]
+low_res_raster_proj_res=res(biovars2000)[1]
+res_ratio=round(low_res_raster_proj_res/high_res_raster_proj_res)
+veg_map_aggregate=aggregate(veg_map_reproj, res_ratio, fun=modal, expand=TRUE)
+veg_map_aggregate=resample(veg_map_aggregate, biovars2000, method='ngb')
+writeRaster(veg_map_aggregate, "landfire_veg_cover_500m.tif", format="GTiff", overwrite=TRUE)
+
+veg_map_aggregate=raster("landfire_veg_cover_500m.tif")
+reclass_table=(read.csv('landfire_shorthand.csv',header=T, stringsAsFactors=F))
+#create a map for native generalized vegetation classes
+reclass_table=reclass_table[,c("Value", "veg_type_code_native")]
+landfire_reclass=subs(veg_map_aggregate,  reclass_table)
+writeRaster(landfire_reclass, "landfire_veg_cover_500m_simple_native_veg.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
+
+#create a A map for generalized (native and non-native) vegetation classes
+reclass_table=(read.csv('landfire_shorthand.csv',header=T, stringsAsFactors=F))
+reclass_table=reclass_table[,c("Value", "veg_type_code_all")]
+landfire_reclass=subs(veg_map_aggregate,  reclass_table)
+writeRaster(landfire_reclass, "landfire_veg_cover_500m_simple_native_and_alien_veg.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
+```
+
+
+Now we will do the same steps with the current landfire veg map
+the landfire BPS (native only, off course)
+```{r}
+#first must reproject raster
+veg_map=raster("HI_110BPS.tif")
+veg_map_reproj=projectRaster(from=veg_map, crs=crs(biovars2000), method="ngb") 
+high_res_raster_proj_res=res(veg_map_reproj)[1]
+low_res_raster_proj_res=res(biovars2000)[1]
+res_ratio=round(low_res_raster_proj_res/high_res_raster_proj_res)
+veg_map_aggregate=aggregate(veg_map_reproj, res_ratio, fun=modal, expand=TRUE)
+veg_map_aggregate=resample(veg_map_aggregate, biovars2000, method='ngb')
+writeRaster(veg_map_aggregate, "HI_110BPS_500m.tif", format="GTiff", overwrite=TRUE)
+
+veg_map_aggregate=raster("HI_110BPS_500m.tif")
+reclass_table=(read.csv('BPS_reclass_table_allFinalClasses.csv',header=T, stringsAsFactors=F))
+#create a map for native generalized vegetation classes
+reclass_table=reclass_table[,c("Value", "veg_type_code_native")]
+landfire_reclass=subs(veg_map_aggregate,  reclass_table)
+writeRaster(landfire_reclass, "HI_110BPS_simple_native_veg.tif", format="GTiff", overwrite=TRUE, datatype='INT1U')
+
+```
+
+
+
+
+
+To not evaluate code
+```{r, eval=FALSE}
+summary(cars)
+```
+
+Caching (to not recalculate)
+If you want to enable caching globally for a document you can include a code chunk like this at the top of the document:
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+If you run into problems with cached output you can always clear the knitr cache by removing the folder named with a _cache suffix within your document's directory.
+To not evaluate code
+To enable caching of a code chunk, simply use:
+```{r, cache=TRUE}
+summary(cars)
+```
+Any changes in code chunk will trigger reevaluation of code chunk
+
+
+You can also embed plots, for example:
+```{r, echo=FALSE}
+plot(cars)
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

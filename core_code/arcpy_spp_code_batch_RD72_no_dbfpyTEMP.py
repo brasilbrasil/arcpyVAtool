@@ -1,16 +1,15 @@
 #disable background processing (arcgis geoprocessing options) as it does not work well- python will call variables for routines that are not yet complete from previous routine!!
 #python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpy.py
+#python D:\Dropbox\code\arcpyVAtool\core_code\arcpy_spp_code_batch_RD72_no_dbfpyTEMP.py
 #if running parallel, must run this from cmd with script above, python must be on system path
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_JP_CEs/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
-#rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
-ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
-#ce_data_dir=r"Y:/PICCC_data/VA data/CEs_KB/range maps archipelago/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
+ce_data_dir=r"Y:/PICCC_data/VA data/CEs_500m/" #location of climate envelope files
 use_bio_region_filter=0 #
 subset_of_CEs=[0,1084] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
 import_cce_list=False #option to provide list of species names
@@ -43,14 +42,14 @@ map_mrf_zone=False
 map_mig_zone_pt1=False
 calc_dist_fce_to_CCE=False
 calc_mean_elev_cce=False
-calc_mean_elev_fce=False #still crashing
+calc_mean_elev_fce=False
 count_cce_bioreg=False
 count_cce_bioreg_transition_areas=False
 calc_cce_precip_interannual_var=False
 ##
 create_rep_zones=False
 calc_resp_zone_area=False
-calc_zone_slr_area=False
+calc_zone_slr_area=True
 calc_zone_lava_flow_area=False
 calc_zone_hab_qual=False #this is breaking randomly
 calc_eff_hab_qual_nonpioneer=False
@@ -63,14 +62,14 @@ calc_fragmentation=False #died at sp 413!!!!!!!!!!!!!!!!!!
 calc_dist_to_top_of_island=False
 calc_protected_area=False
 calc_ung_free_area=False
-calc_slope_metrics=False
+calc_zone_topo_complexity=False
+##calc_slope_metrics=True
 ##calc_zone_aspect_mean=True
 ##calc_zone_cos_aspect=True
 ##calc_zone_sin_aspect=True
 ##calc_zone_aspect_std=True
-calc_zone_topo_complexity=True
-calc_ppt_gradient=True
-calc_zone_invasibility=True
+calc_ppt_gradient=False
+calc_zone_invasibility=False
 
 #START UNDERHOOD
 resultsdir0=r"%sresults/%s/" %(rootdir, island)
@@ -355,14 +354,8 @@ try:
     else:
         arcpy.env.workspace = datadir
         if all_files_in_directory==1:
-            import glob
-            jnk=glob.glob(datadir+"CCE*.tif")
-            CCE_Spp=[os.path.basename(x) for x in jnk]
-            jnk=glob.glob(datadir+"FCE*.tif")
-            FCE_Spp=[os.path.basename(x) for x in jnk]
-
-            #FCE_Spp = arcpy.ListRasters("FCE*", "tif")
-            #CCE_Spp = arcpy.ListRasters("CCE*", "tif")
+            FCE_Spp = arcpy.ListRasters("FCE*", "tif")
+            CCE_Spp = arcpy.ListRasters("CCE*", "tif")
             if len(subset_of_CEs)>0:
                 FCE_Spp=FCE_Spp[subset_of_CEs[0]:subset_of_CEs[1]]
                 CCE_Spp=CCE_Spp[subset_of_CEs[0]:subset_of_CEs[1]]
@@ -1431,6 +1424,7 @@ try:
                 pool.terminate()
                 pool.join()
 
+
     if count_cce_bioreg:
         def calculate_count_cce_bioreg_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
             metric_NA=True
@@ -1448,8 +1442,6 @@ try:
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
                     tmp_zn=range(0,18)
                     veg_area=zonal_area_from_dbf2(outname, tmp_zn)
-                    n_areas=sum([x>0 for x in veg_area])
-                    veg_area.append(n_areas)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1482,7 +1474,7 @@ try:
             metric_NA=True
             Sp_index=all_sp_codes.index(sp_code)
             loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
-            bioregion_loc="%sbioregions_boundaries_buffer_no_coastal.tif" %(landscape_factor_dir)
+            bioregion_loc="%sbioregions.tif" %(landscape_factor_dir)
             bioregions=arcpy.Raster(bioregion_loc)
             if arcpy.Exists(loc_COR_CCE):
                 #CALC area in each habitat type
@@ -1492,10 +1484,8 @@ try:
                     inRaster = CCE_temp
                     outname=r"%sDBFs/count_cce_bioreg_transition_areas%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(CCE_temp,"VALUE",bioregions,"VALUE",outname)
-                    tmp_zn=range(1,15)
+                    tmp_zn=range(0,18)
                     veg_area=zonal_area_from_dbf2(outname, tmp_zn)
-                    n_areas=sum([x>0 for x in veg_area])
-                    veg_area.append(n_areas)
 
                     save_temp_csv_data(veg_area, opath)
                     del CCE_temp; del inRaster; del outname; del veg_area; del opath;
@@ -1522,67 +1512,6 @@ try:
                 #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
-
-    ##CALCULATE calc_cce_precip_interannual_var
-    if calc_cce_precip_interannual_var:
-        def calc_cce_precip_interannual_var_fx2(sp_code_st, resultsdir, sp_code): #landscape_factor_dir,island
-            metric_NA=True
-            inRasterloc2 = r"%shist_ppt_var/annual_CV.tif" %(landscape_factor_dir)
-            Sp_index=all_sp_codes.index(sp_code)
-            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
-            if arcpy.Exists(loc_COR_CCE):
-                opath="%sDBFs/cce_precip_interannual_var%s.csv" %(resultsdir,sp_code_st)
-                if arcpy.Exists(opath)==False or overwrite==1:
-                    CCE_temp=arcpy.Raster(loc_COR_CCE)
-                    CCE_DEM_temp=CCE_temp*arcpy.Raster(inRasterloc2)
-                    if CCE_DEM_temp.maximum>0:
-                        CCE_mean_elev=get_num_attributes(CCE_DEM_temp,"MEAN")
-                        CCE_min_elev=get_num_attributes(CCE_DEM_temp,"MINIMUM")
-                        CCE_max_elev=get_num_attributes(CCE_DEM_temp,"MAXIMUM")
-                        CCE_stdev_elev=get_num_attributes(CCE_DEM_temp,"STD")
-                    else:
-                        CCE_mean_elev=0
-                        CCE_min_elev=0
-                        CCE_max_elev=0
-                        CCE_stdev_elev=0
-
-                    if kio==0:
-                        try:
-                            arcpy.Delete_management(CCE_DEM_temp)
-                        except:
-                            pass
-
-                    jnk=[CCE_mean_elev, CCE_min_elev, CCE_max_elev, CCE_stdev_elev]
-                    save_temp_csv_data(jnk, opath)
-                #else:
-                #       jnk=load_temp_csv_float_data(opath)
-                #       CCE_mean_elev=jnk[0]
-                #       CCE_min_elev=jnk[1]
-                #       CCE_max_elev=jnk[2]
-                    metric_previously_done=False
-                    metric_NA=False
-                else:
-                    metric_previously_done=True
-                    metric_NA=False
-
-            return metric_previously_done, metric_NA
-        if not parallel:
-            for i in range(len(CCE_Spp)):
-                va_metric_wrapper(calc_cce_precip_interannual_var_fx2, i)
-        else:
-            import itertools
-            import multiprocessing
-            from multiprocessing import Pool, freeze_support
-            if __name__ == '__main__':
-                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
-                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_cce_precip_interannual_var_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
-                pool.close()
-                import time
-                time.sleep(10)
-                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
-                pool.terminate()
-                pool.join()
-
 
     ##################
     ########END PART 1
@@ -1789,7 +1718,7 @@ try:
 
                     arcpy.BuildRasterAttributeTable_management(slr_map2, "Overwrite")
                     arcpy.CalculateStatistics_management(slr_map2, "", "", "", "OVERWRITE")
-                    if slr_map2.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
+                    if not slr_map2.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
                         loc_slr=r"%sslr_%s.tif" %(resultsdir,sp_code_st)
                         #slr_map2.save(loc_slr)
                         arcpy.CopyRaster_management(slr_map2, loc_slr, "", "0", "0", "", "", "4_BIT", "", "")
@@ -1857,8 +1786,7 @@ try:
                     loc_lava_flows_table=r"%sDBFs/lava_flows_%s.dbf" %(resultsdir,sp_code_st)
                     arcpy.sa.TabulateArea(response_zones,"VALUE",young_lava_flows, "VALUE",loc_lava_flows_table)
                     #zones=[1,2,3]
-                    zone_lava_flows=zonal_area_from_dbf_matrix2(loc_lava_flows_table, temp_zones=zones)
-
+                    zone_lava_flows=zonal_area_from_dbf_byCol(loc_lava_flows_table, zones, 'VALUE_1')
                     young_lava_flows=arcpy.sa.SetNull(young_lava_flows,1,"Value=0")
                     arcpy.CopyRaster_management(young_lava_flows, loc_lava_flows, "", "0", "0", "", "", "4_BIT", "", "")
                     save_temp_csv_data(zone_lava_flows, opath)
@@ -2163,16 +2091,13 @@ try:
                     path_zone_frag=r"%sDBFs/zone_frag_%s.csv" %(resultsdir,sp_code_st)
                     if arcpy.Exists(path_zone_frag)==False or overwrite==1:
                         frag_map=frag_map*response_zones
-                        if frag_map.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
-                            frag_map=arcpy.sa.SetNull(frag_map,1,"Value=0")
-                            loc_fragmentation=r"%sfragmentation_%s.tif" %(resultsdir,sp_code_st)
-                            frag_map.save(loc_fragmentation)
-                            loc_fragmentation_table=r"%sDBFs/fragmentation_%s.dbf" %(resultsdir,sp_code_st)
-                            arcpy.sa.TabulateArea(response_zones,"VALUE",loc_fragmentation, "VALUE",loc_fragmentation_table)
-                            #zones=[1,2,3]
-                            zone_fragmentation=zonal_area_from_dbf_byCol(loc_fragmentation_table, zones, 'VALUE_1')
-                        else:
-                            zone_fragmentation=[0, 0, 0]
+                        frag_map=arcpy.sa.SetNull(frag_map,1,"Value=0")
+                        loc_fragmentation=r"%sfragmentation_%s.tif" %(resultsdir,sp_code_st)
+                        frag_map.save(loc_fragmentation)
+                        loc_fragmentation_table=r"%sDBFs/fragmentation_%s.dbf" %(resultsdir,sp_code_st)
+                        arcpy.sa.TabulateArea(response_zones,"VALUE",loc_fragmentation, "VALUE",loc_fragmentation_table)
+                        #zones=[1,2,3]
+                        zone_fragmentation=zonal_area_from_dbf_byCol(loc_fragmentation_table, zones, 'VALUE_1')
                         save_temp_csv_data(zone_fragmentation, path_zone_frag)
                     else:
                         zone_fragmentation=load_temp_csv_float_data(path_zone_frag)
@@ -2182,17 +2107,14 @@ try:
                     path_zone_core=r"%sDBFs/zone_core_%s.csv" %(resultsdir,sp_code_st)
                     if arcpy.Exists(path_zone_core)==False or overwrite==1:
                         core_biome_map=core_biome_map*response_zones
-                        if core_biome_map.maximum>0: #arcpy.GetRasterProperties_management(slr_map2, "MINIMUM"), get_num_attributes(slr_map2,"MEAN")==0
-                            core_biome_map=arcpy.sa.SetNull(core_biome_map,1,"Value=0")
-                            loc_core_biome=r"%score_biome_%s.tif" %(resultsdir,sp_code_st)
-                            core_biome_map.save(loc_core_biome)
-                            loc_core_biome_table=r"%sDBFs/core_biome_%s.dbf" %(resultsdir,sp_code_st)
-                            #arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", loc_core_biome, loc_core_biome_table,"DATA")
-                            arcpy.sa.TabulateArea(response_zones,"VALUE",loc_core_biome, "VALUE",loc_core_biome_table)
-                            #zones=[1,2,3]
-                            zone_core_biome=zonal_area_from_dbf_byCol(loc_core_biome_table, zones, 'VALUE_1')
-                        else:
-                            zone_core_biome=[0,0,0]
+                        core_biome_map=arcpy.sa.SetNull(core_biome_map,1,"Value=0")
+                        loc_core_biome=r"%score_biome_%s.tif" %(resultsdir,sp_code_st)
+                        core_biome_map.save(loc_core_biome)
+                        loc_core_biome_table=r"%sDBFs/core_biome_%s.dbf" %(resultsdir,sp_code_st)
+                        #arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", loc_core_biome, loc_core_biome_table,"DATA")
+                        arcpy.sa.TabulateArea(response_zones,"VALUE",loc_core_biome, "VALUE",loc_core_biome_table)
+                        #zones=[1,2,3]
+                        zone_core_biome=zonal_area_from_dbf_byCol(loc_core_biome_table, zones, 'VALUE_1')
                         save_temp_csv_data(zone_core_biome, path_zone_core)
                     else:
                         zone_core_biome=load_temp_csv_float_data(path_zone_core)
@@ -2449,64 +2371,63 @@ try:
                 #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
                 pool.terminate()
                 pool.join()
-
-    #CALC ZONE SLOPE MEAN, STDE
-    #CALC SLOPE QUANTILES
-    if calc_slope_metrics:
-        def calc_slope_metrics_fx(sp_code_st, resultsdir, sp_code):
-            metric_NA=True
-            Sp_index=all_sp_codes.index(sp_code)
-
-            opath=r"%sDBFs/%s_Zone_slope_max.csv" %(resultsdir, sp_code_st)
-            opath2=r"%sDBFs/%s_Zone_slope_min.csv" %(resultsdir, sp_code_st)
-            opath3=r"%sDBFs/%s_Zone_slope_std.csv" %(resultsdir, sp_code_st)
-            opath4=r"%sDBFs/%s_Zone_slope_median.csv" %(resultsdir, sp_code_st)
-            loc_CCE_slope=r"%sDBFs/slope_%s.dbf" %(resultsdir,sp_code_st)
-            if arcpy.Exists(opath)==False or overwrite==1:
-                if use_effective_CE_mask:
-                    loc_response_zone=r"%sresponse_zone_eff_%s.tif" %(resultsdir, sp_code_st)
-                else:
-                    loc_response_zone=r"%sresponse_zone_%s.tif" %(resultsdir,sp_code_st)
-                response_zones=arcpy.Raster(loc_response_zone)
-
-                inRasterloc2 = r"%s%s/DEM/%s_deg_slope.tif" %(landscape_factor_dir,island,island)
-                arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", inRasterloc2, loc_CCE_slope,"DATA")
-
-                #zones=[1,2,3]
-                Zone_slope_min=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MIN', multFactor=1, default_val=0)
-                Zone_slope_max=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MAX', multFactor=1, default_val=0)
-                Zone_slope_std=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'STD', multFactor=1, default_val=0)
-                Zone_slope_median=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MEDIAN', multFactor=1, default_val=0)
-
-                save_temp_csv_data(Zone_slope_median, opath4)
-                save_temp_csv_data(Zone_slope_std, opath3)
-                save_temp_csv_data(Zone_slope_min, opath2)
-                save_temp_csv_data(Zone_slope_max, opath)
-                metric_previously_done=False
-                metric_NA=False
-
-
-            else:
-                metric_previously_done=True
-                metric_NA=False
-
-            return metric_previously_done, metric_NA
-        if not parallel:
-            for i in range(len(CCE_Spp)):
-                va_metric_wrapper(calc_slope_metrics_fx, i)
-        else:
-            import itertools
-            import multiprocessing
-            from multiprocessing import Pool, freeze_support
-            if __name__ == '__main__':
-                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
-                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_slope_metrics_fx, len(CCE_Spp)), range(len(CCE_Spp))))
-                pool.close()
-                import time
-                time.sleep(10)
-                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
-                pool.terminate()
-                pool.join()
+##    #CALC ZONE SLOPE MEAN, STDE
+##    #CALC SLOPE QUANTILES
+##    if calc_slope_metrics:
+##        def calc_slope_metrics_fx(sp_code_st, resultsdir, sp_code):
+##            metric_NA=True
+##            Sp_index=all_sp_codes.index(sp_code)
+##
+##            opath=r"%sDBFs/%s_Zone_slope_max.csv" %(resultsdir, sp_code_st)
+##            opath2=r"%sDBFs/%s_Zone_slope_min.csv" %(resultsdir, sp_code_st)
+##            opath3=r"%sDBFs/%s_Zone_slope_std.csv" %(resultsdir, sp_code_st)
+##            opath4=r"%sDBFs/%s_Zone_slope_median.csv" %(resultsdir, sp_code_st)
+##            loc_CCE_slope=r"%sDBFs/slope_%s.dbf" %(resultsdir,sp_code_st)
+##            if arcpy.Exists(opath)==False or overwrite==1:
+##                if use_effective_CE_mask:
+##                    loc_response_zone=r"%sresponse_zone_eff_%s.tif" %(resultsdir, sp_code_st)
+##                else:
+##                    loc_response_zone=r"%sresponse_zone_%s.tif" %(resultsdir,sp_code_st)
+##                response_zones=arcpy.Raster(loc_response_zone)
+##
+##                inRasterloc2 = r"%s%s/DEM/%s_deg_slope.tif" %(landscape_factor_dir,island,island)
+##                arcpy.sa.ZonalStatisticsAsTable(response_zones,"VALUE", inRasterloc2, loc_CCE_slope,"DATA")
+##
+##                #zones=[1,2,3]
+##                Zone_slope_min=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MIN', multFactor=1, default_val=0)
+##                Zone_slope_max=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MAX', multFactor=1, default_val=0)
+##                Zone_slope_std=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'STD', multFactor=1, default_val=0)
+##                Zone_slope_median=zonal_area_from_dbf_byCol(loc_CCE_slope, zones, 'MEDIAN', multFactor=1, default_val=0)
+##
+##                save_temp_csv_data(Zone_slope_median, opath4)
+##                save_temp_csv_data(Zone_slope_std, opath3)
+##                save_temp_csv_data(Zone_slope_min, opath2)
+##                save_temp_csv_data(Zone_slope_max, opath)
+##                metric_previously_done=False
+##                metric_NA=False
+##
+##
+##            else:
+##                metric_previously_done=True
+##                metric_NA=False
+##
+##            return metric_previously_done, metric_NA
+##        if not parallel:
+##            for i in range(len(CCE_Spp)):
+##                va_metric_wrapper(calc_slope_metrics_fx, i)
+##        else:
+##            import itertools
+##            import multiprocessing
+##            from multiprocessing import Pool, freeze_support
+##            if __name__ == '__main__':
+##                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+##                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_slope_metrics_fx, len(CCE_Spp)), range(len(CCE_Spp))))
+##                pool.close()
+##                import time
+##                time.sleep(10)
+##                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+##                pool.terminate()
+##                pool.join()
 
     if calc_zone_topo_complexity:
         def calc_zone_topo_complexity_fx(sp_code_st, resultsdir, sp_code):
@@ -2870,7 +2791,7 @@ except arcpy.ExecuteError:
     arcpy.AddError(msgs) # Return tool error messages for use with a script tool
     print msgs # Print tool error messages for use in Python/PythonWin
 
-##except socket.error as error: #http://stackoverflow.com/questions/18832643/how-to-catch-this-python-exception-error-errno-10054-an-existing-connection
+##except socket.error as error:
 ##    if error.errno == errno.WSAECONNRESET:
 ##        reconnect()
 ##        retry_action()

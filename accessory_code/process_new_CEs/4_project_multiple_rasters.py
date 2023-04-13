@@ -2,8 +2,8 @@
 #this code will find all rasters in a folder and apply a projection from a file
 #if you want to apply for only one type of raster, change the "All" value to the extension name desired
 #prj_file=arcpy.Raster("Y:/PICCC_analysis/FB_analysis/model_results/biomod2finalmodel_P_PA_oldcode_less_PAs/output_rasters/Iiwi_BIN_baseline_ROC_ef.pmw.tif") #had to define datum on arcgis D_WGS_1984
-datadir="Y:/PICCC_data/VA data/SD RCP45 CEs/range maps archipelago/"
-outputdir="Y:/PICCC_data/VA data/SD RCP45 CEs/range maps archipelago reprojected/"
+datadir="D:/PICCC_data/VA data/SD RCP85 CEs V2/range maps archipelago/"
+outputdir="D:/PICCC_data/VA data/SD RCP85 CEs V2/range maps archipelago reprojected/"
 
 #projection="C:/Program Files (x86)/ArcGIS/Desktop10.0/Coordinate Systems/Geographic Coordinate Systems/North America/NAD 1983.prj"
 #END USER INPUT

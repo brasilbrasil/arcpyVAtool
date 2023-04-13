@@ -1,5 +1,5 @@
 
-i=0
+i=124
 jnk=CCE_Spp[i]
 jnk.encode('ascii','replace')
 inRaster = ce_data_dir + jnk

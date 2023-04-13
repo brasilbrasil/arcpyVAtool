@@ -1,13 +1,19 @@
 ##this code is not finished trying to do it by shapefile means
 #USER INPUT
 search_term="CCE" #FCE or CCE
-rootdir=r"Y:/PICCC_data/VA data/CEs/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
-results_dir="Y:/PICCC_analysis/plant_landscape_va_results/ensemble_zone_maps_P2/NC_Nex_vuln_quantile_maps/"
-spp_info_dir="Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/"
-csvname="%stmp_ensemble_criteria6_highVuln.csv" %(spp_info_dir)
-column_name='NC_Nex_HiVul' #NC_winkout	NC_NO	NC_NEx_winkout	NC_Nex_NO OA_NC_Nex_End OA_NC_Nex_notSec
+rootdir=r"Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps archipelago reprojected 2bits/" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+results_dir="Y:/PICCC_analysis/plant_landscape_va_results/ensemble_zone_maps_P2/"
+spp_info_dir="Y:/PICCC_analysis/plant_landscape_va_results/ensemble_zone_maps_P2/phase2_map_info/"
+csvname="%sall_merged_data.csv" %(spp_info_dir)
+column_name='DDA1B__Vulnerability_mask'
+#DDA1B__Winkout_mask	SDrcp45__Winkout_mask	SDrcp85__Winkout_mask
+#DDA1B__Vulnerability_mask	SDrcp45__Vulnerability_mask	SDrcp85__Vulnerability_mask
+#DDA1B__CE_no_overlap_mask	SDrcp45__CE_no_overlap_mask	SDrcp85__CE_no_overlap_mask
+#NC_winkout	NC_NO	NC_NEx_winkout	NC_Nex_NO OA_NC_Nex_End OA_NC_Nex_notSec
+proj_name=""
 #the two parameters below are unlikely to change
 indicator_val=1 #what is the value in column that indicates species should be included? must be number
+#out_str=proj_name+"_"+column_name+"_"+search_term #name of raster
 out_str=column_name+"_"+search_term #name of raster
 #END USER INPUT
 
@@ -35,7 +41,7 @@ for h in headers:
 for row in reader:
 	for h, v in zip(headers, row):
 		column[h].append(v)
-hab_sp_code=column['sp_code_1'] #changed in sheet sp_code to sp_code_1 because there were multiple columns with the same name
+hab_sp_code=column['VAID'] #changed in sheet sp_code to sp_code_1 because there were multiple columns with the same name
 indicator_col=column[column_name]
 
 

@@ -1,6 +1,7 @@
 #USER INPUT
 #datadir=r"Y:/Py_code/test/results/all/"
-datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_DDA1B/results/all/"
+datadir=r"E:/VA2_rerun/output/A1B/results/all/" #A1B RCP45
+#datadir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_SD_rcp85 V2/results/all/"
 sp_temps=range(1,1115) #range(1,1115)
 bioreg_subset=0
 use_effective_CE_mask=True
@@ -143,7 +144,8 @@ def load_temp_csv_data(opath):
     return jnk
 
 #CAO_data_dir=r"C:/Users/lfortini/Data/VA data/CAO/"
-CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/"
+#CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/"
+CAO_data_dir=r"E:/VA2_rerun/data/CAO/" #this directory is where the species points are located
 csvname="%sspp_name_synonyms.csv" %(CAO_data_dir)
 synonyms_file = csv.reader(csvname)
 f = open(csvname, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is

@@ -4,8 +4,8 @@
 #if exact match is specified, only full file name matches are considered and replaced
 
 #USER INPUT
-sourceDir=r"Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps archipelago reprojected 2bits/" #what is part of directory string that will be changed? #DD A1B HRCM v2 CEs // SD RCP85 CEs // SD RCP45 CEs
-destinationDir="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps archipelago reprojected 2bits excluded spp/" #what will it be changed to?
+sourceDir=r"D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps archipelago reprojected 2bits/" #what is part of directory string that will be changed? #DD A1B HRCM v2 CEs // SD RCP85 CEs // SD RCP45 CEs
+destinationDir="D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps archipelago reprojected 2bits excluded spp/" #what will it be changed to?
 create_log_source=False #If turned on, will create a txt file for each file copied with info about transfer
 create_log_destination=False #If turned on, will create a txt file for each file copied with info about transfer
 find_only=False #test your results first!!
@@ -20,7 +20,7 @@ os.chdir(sourceDir)
 if not os.path.exists(destinationDir):
     os.mkdir(destinationDir)
 # make an empty dictionary which will hold the keys
-csvname=destinationDir+'moveAndRenameCoastalCEs.csv'
+csvname=sourceDir+'moveAndRenameCoastalCEs.csv'
 synonyms_file = csv.reader(csvname)
 f = open(csvname, 'rb') #http://stackoverflow.com/questions/3428532/how-to-import-a-csv-file-using-python-with-headers-intact-where-first-column-is
 reader = csv.reader(f)

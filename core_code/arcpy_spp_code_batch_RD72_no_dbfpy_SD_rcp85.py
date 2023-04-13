@@ -4,12 +4,12 @@
 
 #USER INPUT
 island="all" #
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_SD_rcp85/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_SD_rcp85 V2/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 #rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl2/" #location for outputs. ?whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 landscape_factor_dir=r"Y:/PICCC_data/VA data/landscape/" #whichever is data dir,will have to have subfolders: gaplandcover/ (where gaplandcov_hi is placed)
 CAO_data_dir=r"Y:/PICCC_data/VA data/CAO/" #this directory is where the species points are located
 highest_slr_impact=2 #max elev of slr impacts (this avoids SLR impact calc for high elev species)
-ce_data_dir=r"Y:/PICCC_data/VA data/SD RCP85 CEs/range maps archipelago reprojected 2bits/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
+ce_data_dir=r"Y:/PICCC_data/VA data/SD RCP85 CEs V2/range maps archipelago reprojected 2bits/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
 #ce_data_dir=r"Y:/PICCC_data/VA data/CEs_KB/range maps archipelago/" #location of climate envelope files "Y:/PICCC_data/VA data/CEs_500m/"
 use_bio_region_filter=0 #
 subset_of_CEs=[0,969] #[3,60] 1084 leave empty [] for no subset, if subset: [300,400]
@@ -43,25 +43,25 @@ map_mrf_zone=False
 map_mig_zone_pt1=False
 calc_dist_fce_to_CCE=False
 calc_mean_elev_cce=False
-calc_mean_elev_fce=True #still crashing
-count_cce_bioreg=True
-count_cce_bioreg_transition_areas=True
-calc_cce_precip_interannual_var=True
+calc_mean_elev_fce=False #still crashing
+count_cce_bioreg=False
+count_cce_bioreg_transition_areas=False
+calc_cce_precip_interannual_var=False
 ##
-create_rep_zones=True
-calc_resp_zone_area=True
-calc_zone_slr_area=True
-calc_zone_lava_flow_area=True
-calc_zone_hab_qual=True #this is breaking randomly
-calc_eff_hab_qual_nonpioneer=True
-calc_eff_hab_qual_pioneer=True
-chose_eff_hab_qual=True
-#create_eff_resp_zones=True
-#calc_eff_resp_zone_area=True #debug: why dying after species 549?
-calc_hab_qual=True
-calc_fragmentation=True #died at sp 413!!!!!!!!!!!!!!!!!!
-calc_dist_to_top_of_island=True
-calc_protected_area=True
+create_rep_zones=False
+calc_resp_zone_area=False
+calc_zone_slr_area=False
+calc_zone_lava_flow_area=False
+calc_zone_hab_qual=False #this is breaking randomly
+calc_eff_hab_qual_nonpioneer=False
+calc_eff_hab_qual_pioneer=False
+chose_eff_hab_qual=False
+#create_eff_resp_zones=False
+#calc_eff_resp_zone_area=False #debug: why dying after species 549?
+calc_hab_qual=False
+calc_fragmentation=False #died at sp 413!!!!!!!!!!!!!!!!!!
+calc_dist_to_top_of_island=False
+calc_protected_area=False
 calc_ung_free_area=True
 calc_slope_metrics=True
 ##calc_zone_aspect_mean=True
@@ -1240,57 +1240,67 @@ try:
     ##CALCULATE DISTANCE OF FCE FROM SOURCE CCE AREAS
     ##CALCULATE EUCLIDIAN DISTANCE OF ALL CELLS TO NEAREST CCE/CAO
     if calc_dist_fce_to_CCE:
-        def calc_dist_fce_to_CCE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
-            metric_NA=True
-            Sp_index=all_sp_codes.index(sp_code)
-            loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
-            loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
-            if arcpy.Exists(loc_COR_CCE):
-                opath="%sDBFs/FCE_distance_%s.csv" %(resultsdir,sp_code_st)
-                if arcpy.Exists(opath)==False or overwrite==1:
-                    opath_areaFCE="%sDBFs/calc_area_FCE%s.csv" %(resultsdir,sp_code_st)
-                    jnk=load_temp_csv_float_data(opath_areaFCE)
-                    area_FCE=jnk[0]
-                    if area_FCE!=0:
-                        CCE_temp=arcpy.Raster(loc_COR_CCE)
-                        FCE_temp=arcpy.Raster(loc_COR_FCE)
-                        #inRaster = FCE_temp #CCE_Spp[i]
-                        FCE_dist_temp = arcpy.sa.EucDistance(FCE_temp)
-                        #CLIP DISTANCE SURFACE USING FCE
-                        FCE_dist_temp=FCE_dist_temp*CCE_temp
-                        FCE_distance=get_num_attributes(FCE_dist_temp,"MEAN")
-                        if kio==0:
-                            try:
-                                arcpy.Delete_management(FCE_dist_temp)
-                            except:
-                                pass
-                    else:
-                        FCE_distance='wink out'
-                    jnk=[FCE_distance]
-                    save_temp_csv_data(jnk, opath)
-                    metric_previously_done=False
-                    metric_NA=False
-                else:
-                    metric_previously_done=True
-                    metric_NA=False
-
-            return metric_previously_done, metric_NA
-        if not parallel:
-            for i in range(len(CCE_Spp)):
-                va_metric_wrapper(calc_dist_fce_to_CCE_fx2, i)
+        jnk=CCE_Spp[len(CCE_Spp)-1]
+        jnk.encode('ascii','replace')
+        inRaster = ce_data_dir + jnk
+        sp_code_st=inRaster[-8:-4]
+        resultsdir=resultsdir0+sp_code_st+"/"
+        sp_code=str(int(sp_code_st)) #get rid of extra zeros
+        opath="%sDBFs/FCE_distance_%s.csv" %(resultsdir,sp_code_st)
+        if arcpy.Exists(opath)==True and overwrite==0:
+            print 'calc_dist_fce_to_CCE already done for all spp'
         else:
-            import itertools
-            import multiprocessing
-            from multiprocessing import Pool, freeze_support
-            if __name__ == '__main__':
-                pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
-                pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_dist_fce_to_CCE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
-                pool.close()
-                import time
-                time.sleep(10)
-                #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
-                pool.terminate()
-                pool.join()
+            def calc_dist_fce_to_CCE_fx2(sp_code_st, resultsdir, sp_code): #no other var calls
+                metric_NA=True
+                Sp_index=all_sp_codes.index(sp_code)
+                loc_COR_FCE=r"%sCOR_FCE%s.tif" %(resultsdir,sp_code_st)
+                loc_COR_CCE=r"%sCOR_CCE%s.tif" %(resultsdir,sp_code_st)
+                if arcpy.Exists(loc_COR_CCE):
+                    opath="%sDBFs/FCE_distance_%s.csv" %(resultsdir,sp_code_st)
+                    if arcpy.Exists(opath)==False or overwrite==1:
+                        opath_areaFCE="%sDBFs/calc_area_FCE%s.csv" %(resultsdir,sp_code_st)
+                        jnk=load_temp_csv_float_data(opath_areaFCE)
+                        area_FCE=jnk[0]
+                        if area_FCE!=0:
+                            CCE_temp=arcpy.Raster(loc_COR_CCE)
+                            FCE_temp=arcpy.Raster(loc_COR_FCE)
+                            #inRaster = FCE_temp #CCE_Spp[i]
+                            FCE_dist_temp = arcpy.sa.EucDistance(FCE_temp)
+                            #CLIP DISTANCE SURFACE USING FCE
+                            FCE_dist_temp=FCE_dist_temp*CCE_temp
+                            FCE_distance=get_num_attributes(FCE_dist_temp,"MEAN")
+                            if kio==0:
+                                try:
+                                    arcpy.Delete_management(FCE_dist_temp)
+                                except:
+                                    pass
+                        else:
+                            FCE_distance='wink out'
+                        jnk=[FCE_distance]
+                        save_temp_csv_data(jnk, opath)
+                        metric_previously_done=False
+                        metric_NA=False
+                    else:
+                        metric_previously_done=True
+                        metric_NA=False
+
+                return metric_previously_done, metric_NA
+            if not parallel:
+                for i in range(len(CCE_Spp)):
+                    va_metric_wrapper(calc_dist_fce_to_CCE_fx2, i)
+            else:
+                import itertools
+                import multiprocessing
+                from multiprocessing import Pool, freeze_support
+                if __name__ == '__main__':
+                    pool=Pool(processes=multiprocessing.cpu_count()) #multiprocessing.cpu_count()
+                    pool.map(pre_parallel_wrapper, itertools.izip(itertools.repeat(calc_dist_fce_to_CCE_fx2, len(CCE_Spp)), range(len(CCE_Spp))))
+                    pool.close()
+                    import time
+                    time.sleep(10)
+                    #if pool.poll() is None: #http://stackoverflow.com/questions/16636095/terminating-subprocess-in-python2-7
+                    pool.terminate()
+                    pool.join()
 
     ##CALCULATE MEAN ELEVATION OF CCE
     if calc_mean_elev_cce:

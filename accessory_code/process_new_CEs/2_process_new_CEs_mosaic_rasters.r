@@ -1,11 +1,12 @@
 rm(list = ls()) #remove all past worksheet variables
 library(raster)
 library(stringr)
-source_dir="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps bin extended/" #DD A1B HRCM v2 CEs // SD RCP45 CEs // SD RCP85 CEs
-wd="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps archipelago/"
+source_dir="D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps bin extended/" #DD A1B HRCM v2 CEs // SD RCP45 CEs // SD RCP85 CEs
+wd="D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps archipelago/"
 dir.create(wd, showWarnings = F)
 setwd(wd)
-cpucores=20
+cpucores=6
+overwrite_results=F
 
 #mosaic rasters:
 dir_list=list.dirs(path = source_dir, full.names = F, recursive = TRUE)
@@ -20,13 +21,15 @@ create_CEs_fx=function(dir_selection){
   
   #map=maps[2]
   for (map in maps){ 
-    tif_file_nms=list.files(paste0(source_dir, "/", dir_selection), pattern=paste0(map, "$"), recursive=T)
-    island_stack=stack(paste0(source_dir, dir_selection, "/", tif_file_nms))
-    m2 <- mosaic(island_stack[[1]], island_stack[[2]], island_stack[[3]], island_stack[[4]], 
-                 island_stack[[5]], island_stack[[6]], island_stack[[7]], fun=max)
     jnk=which(map==maps)
     outname=paste0(wd, names[jnk], sp_code, ".tif")  
-    writeRaster(m2, outname, format="GTiff", overwrite=TRUE, datatype='INT1U')    
+    if (overwrite_results | !file.exists(outname)){
+      tif_file_nms=list.files(paste0(source_dir, "/", dir_selection), pattern=paste0(map, "$"), recursive=T)
+      island_stack=stack(paste0(source_dir, dir_selection, "/", tif_file_nms))
+      m2 <- mosaic(island_stack[[1]], island_stack[[2]], island_stack[[3]], island_stack[[4]], 
+                   island_stack[[5]], island_stack[[6]], island_stack[[7]], fun=max)
+      writeRaster(m2, outname, format="GTiff", overwrite=TRUE, datatype='INT1U')    
+    }
   }  
 }
 

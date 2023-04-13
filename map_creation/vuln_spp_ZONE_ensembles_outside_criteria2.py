@@ -1,6 +1,6 @@
 #USER INPUT
 search_term="response_zone"
-rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/all" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
+rootdir=r"Y:/PICCC_analysis/plant_landscape_va_results/allSpp_allIsl_SD_rcp85 V2/results/all" #whichever is data dir, will have to have subfolders: results/, results/la/, la/ (where you place CCE and FCE files)
 zone_val=2 #1,2,3
 spp_info_dir=r"Y:/PICCC_analysis/plant_landscape_va_results/redone_w_eff_CE/results/" #where is spreadsheet
 csvname="%stmp_ensemble_criteria6_highVuln.csv" %(spp_info_dir)

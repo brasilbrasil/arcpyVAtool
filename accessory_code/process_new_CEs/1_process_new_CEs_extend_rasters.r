@@ -1,10 +1,10 @@
 rm(list = ls()) #remove all past worksheet variables
 library(raster)
-source_dir="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps bin/" #DD A1B HRCM v2 CEs // SD RCP45 CEs // SD RCP85 CEs
-wd="Y:/PICCC_data/VA data/DD A1B HRCM v2 CEs/range maps bin extended/"
+source_dir="D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps bin/" #DD A1B HRCM v2 CEs // SD RCP45 CEs // SD RCP85 CEs
+wd="D:/PICCC_data/VA data/SD RCP45 CEs V2/range maps bin extended/"
 dir.create(wd, showWarnings = F)
 setwd(wd)
-cpucores=20
+cpucores=6
 
 tif_file_nms=list.files(source_dir, pattern="\\.tif$", recursive=T)
 
